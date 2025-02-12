@@ -3,6 +3,8 @@ import React from "react";
 import Image from "next/image";
 import { FaGithub, FaLinkedin } from "react-icons/fa";
 import { BackgroundGradient } from "@/components/ui/background-gradient";
+import anmol from "../../assets/anmol.png";
+import shashi from "../../assets/shashi.png";
 
 const page = () => {
   return (
@@ -14,21 +16,21 @@ const page = () => {
           <div className="flex-shrink-0 w-full snap-center">
             <BackgroundGradient className="rounded-[22px] w-full p-4 sm:p-8 bg-gray-400 dark:bg-zinc-900">
               <Image
-                src="/jordans.webp"
+                src={anmol}
                 alt="Profile Picture"
                 height={400}
                 width={400}
                 className="object-contain"
               />
               <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200 font-bold">
-                John Doe
+                Anmol Bhardwaj
               </p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                 I'm a software developer specialized in building web applications using React, Next.js, and Tailwind CSS.
               </p>
               <div className="flex items-center gap-4">
                 <a
-                  href="https://github.com/your-github-username"
+                  href="https://github.com/anmol-2003"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-700 dark:text-gray-300 hover:text-gray-900"
@@ -58,14 +60,14 @@ const page = () => {
                 className="object-contain"
               />
               <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200 font-bold">
-                Jane Smith
+                Arpit Karn
               </p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                 Front-end developer passionate about creating seamless user experiences with React and Next.js.
               </p>
               <div className="flex items-center gap-4">
                 <a
-                  href="https://github.com/your-github-username"
+                  href="https://github.com/arpit7257"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-700 dark:text-gray-300 hover:text-gray-900"
@@ -88,14 +90,14 @@ const page = () => {
           <div className="flex-shrink-0 w-full snap-center">
             <BackgroundGradient className="rounded-[22px] w-full p-4 sm:p-8 bg-gray-400 dark:bg-zinc-900">
               <Image
-                src="/jordans.webp"
+                src={shashi}
                 alt="Profile Picture"
                 height={400}
                 width={400}
                 className="object-contain"
               />
               <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200 font-bold">
-                Alex Johnson
+                Shashi Sah
               </p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                 Full-stack developer who loves coding, solving problems, and building amazing apps. hello friends chai pilo
@@ -132,14 +134,14 @@ const page = () => {
                 className="object-contain"
               />
               <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200 font-bold">
-                Emily Clark
+                Abhishek Shah
               </p>
               <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
                 UI/UX designer with a passion for creating intuitive and beautiful digital experiences. hello friends.
               </p>
               <div className="flex items-center gap-4">
                 <a
-                  href="https://github.com/your-github-username"
+                  href="https://github.com/Abhishek-2610"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-700 dark:text-gray-300 hover:text-gray-900"
@@ -147,7 +149,7 @@ const page = () => {
                   <FaGithub size={24} />
                 </a>
                 <a
-                  href="https://linkedin.com/in/your-linkedin-username"
+                  href="https://www.linkedin.com/in/abhishek-shah-3262ba275"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="text-gray-700 dark:text-gray-300 hover:text-gray-900"
@@ -165,21 +167,21 @@ const page = () => {
         {/* Card 1 */}
         <BackgroundGradient className="rounded-[22px] max-w-sm mx-auto p-4 sm:p-8 bg-gray-400 dark:bg-zinc-900">
           <Image
-            src="/jordans.webp"
+            src={anmol}
             alt="Profile Picture"
-            height={400}
+            height={800}
             width={400}
             className="object-contain"
           />
           <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200 font-bold">
-            John Doe
+            Anmol Bhardwaj
           </p>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
             I'm a software developer specialized in building web applications using React, Next.js, and Tailwind CSS.
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com/your-github-username"
+              href="https://github.com/anmol-2003"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900"
@@ -207,14 +209,14 @@ const page = () => {
             className="object-contain"
           />
           <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200 font-bold">
-            Jane Smith
+            Arpit Karn
           </p>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
             Front-end developer passionate about creating seamless user experiences with React and Next.js.
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com/your-github-username"
+              href="https://github.com/arpit7257"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900"
@@ -235,14 +237,14 @@ const page = () => {
         {/* Card 3 */}
         <BackgroundGradient className="rounded-[22px] max-w-sm mx-auto p-4 sm:p-8 bg-gray-400 dark:bg-zinc-900">
           <Image
-            src="/jordans.webp"
+            src={shashi}
             alt="Profile Picture"
             height={400}
             width={400}
             className="object-contain"
           />
           <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200 font-bold">
-            Alex Johnson
+            Shashi Sah
           </p>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
             Full-stack developer who loves coding, solving problems, and building amazing apps. hello friends chai pilo
@@ -277,14 +279,14 @@ const page = () => {
             className="object-contain"
           />
           <p className="text-base sm:text-xl text-black mt-4 mb-2 dark:text-neutral-200 font-bold">
-            Emily Clark
+            Abhishek Shah
           </p>
           <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">
             UI/UX designer with a passion for creating intuitive and beautiful digital experiences. hello friends.
           </p>
           <div className="flex items-center gap-4">
             <a
-              href="https://github.com/your-github-username"
+              href="https://github.com/Abhishek-2610"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900"
@@ -292,7 +294,7 @@ const page = () => {
               <FaGithub size={24} />
             </a>
             <a
-              href="https://linkedin.com/in/your-linkedin-username"
+              href="https://www.linkedin.com/in/abhishek-shah-3262ba275"
               target="_blank"
               rel="noopener noreferrer"
               className="text-gray-700 dark:text-gray-300 hover:text-gray-900"

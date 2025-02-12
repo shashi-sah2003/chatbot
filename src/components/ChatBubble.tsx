@@ -2,10 +2,11 @@
 import * as React from "react";
 import Avatar from "@mui/material/Avatar";
 import { deepOrange, deepPurple } from "@mui/material/colors";
+import AnimatedText from "@/components/AnimatedText"; // Adjust the path as needed
 
 interface ChatBubbleProps {
   sender: "user" | "ai";
-  message: React.ReactNode; // Updated type to support JSX elements.
+  message: React.ReactNode; // Supports both plain text and JSX elements.
 }
 
 const ChatBubble = ({ sender, message }: ChatBubbleProps) => {
@@ -22,9 +23,14 @@ const ChatBubble = ({ sender, message }: ChatBubbleProps) => {
           )}
         </div>
       </div>
-      
+
       <div className="chat-bubble max-w-[70%] break-words text-white">
-        {message}
+        {/* If sender is AI and message is a string, animate it */}
+        {sender === "ai" && typeof message === "string" ? (
+          <AnimatedText text={message} interval={100} />
+        ) : (
+          message
+        )}
       </div>
     </div>
   );
