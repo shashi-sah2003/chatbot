@@ -43,7 +43,8 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
     ]);
 
     try {
-      const response = await axios.post(`http://127.0.0.1:8000${apiEndpoint}`, { query: userQuery });
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      const response = await axios.post(`${baseUrl}${apiEndpoint}`, { query: userQuery });
       let fullText = response.data.response;
       fullText = fullText ? fullText.toString() : "";
       // Update the AI message with the full response text.
