@@ -7,10 +7,27 @@ body {
 }
 
 @layer utilities {
-  .text-balance {
-    text-wrap: balance;
+  @media (min-width: 1024px) {
+    /* For WebKit browsers */
+    .chat-container::-webkit-scrollbar {
+      width: 8px;
+    }
+    .chat-container::-webkit-scrollbar-track {
+      background: #212121;
+    }
+    .chat-container::-webkit-scrollbar-thumb {
+      background-color: #888;
+      border-radius: 4px;
+      border: 2px solid #212121;
+    }
+    /* For Firefox */
+    .chat-container {
+      scrollbar-width: thin;
+      scrollbar-color: #888 #212121;
+    }
   }
 }
+
 
 @layer base {
   :root {

@@ -1,37 +1,48 @@
 "use client";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
+import { streamChat } from "@/components/streamChatUtils"; // Adjust the path as needed
 
 interface AnimatedTextProps {
   text: string;
-  interval?: number; // Delay (in milliseconds) between each word
+  speed?: number;
+  onComplete?: () => void;
 }
 
-const AnimatedText: React.FC<AnimatedTextProps> = ({ text, interval = 200 }) => {
+const AnimatedText: React.FC<AnimatedTextProps> = ({ text, speed = 20, onComplete }) => {
   const [displayedText, setDisplayedText] = useState("");
+  const completedRef = useRef(false);
 
   useEffect(() => {
-    // Compute the words array inside the effect to avoid unnecessary re-runs.
-    const words = text.split(" ");
-    setDisplayedText(""); // Reset the displayed text when 'text' changes
-    let currentWordIndex = 0;
-
-    const timer = setInterval(() => {
-      setDisplayedText((prev) =>
-        prev ? `${prev} ${words[currentWordIndex]}` : words[currentWordIndex]
-      );
-      currentWordIndex++;
-
-      // Once all words have been displayed, clear the timer.
-      if (currentWordIndex >= words.length) {
-        clearInterval(timer);
+    // Reset text when a new string is passed in
+    setDisplayedText("");
+    completedRef.current = false;
+    const intervalId = streamChat(text, setDisplayedText, speed, () => {
+      if (!completedRef.current) {
+        completedRef.current = true;
+        onComplete && onComplete();
       }
-    }, interval);
+    });
+    return () => clearInterval(intervalId);
+  }, [text, speed, onComplete]);
 
-    // Cleanup the interval if the component unmounts or text/interval changes.
-    return () => clearInterval(timer);
-  }, [text, interval]);
+  const isComplete = displayedText === text;
 
-  return <>{displayedText}</>;
+  return (
+    <>
+      <span>{displayedText}</span>
+      {!isComplete && <span className="cursor animate-blink">|</span>}
+      <style jsx>{`
+        @keyframes blink {
+          0% { opacity: 1; }
+          50% { opacity: 0; }
+          100% { opacity: 1; }
+        }
+        .animate-blink {
+          animation: blink 1s infinite;
+        }
+      `}</style>
+    </>
+  );
 };
 
 export default AnimatedText;
