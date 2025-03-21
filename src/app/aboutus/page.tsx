@@ -80,7 +80,7 @@ const teamMembers = [
     name: "Arpit Karn",
     image: arpit,
     description:
-      "Front-end developer passionate about creating seamless user experiences with React and Next.js.",
+      "Full Stack Developer and GenAI enthusiast, passionate about crafting creative apps with React and AI.",
     githubUrl: "https://github.com/arpit7257",
     linkedinUrl: "https://www.linkedin.com/in/arpit-karn-b047b3256/",
   },

@@ -2,10 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Global font family for the project */
 body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* Custom scrollbar styling for larger screens */
 @layer utilities {
   @media (min-width: 1024px) {
     /* For WebKit browsers */
@@ -26,9 +28,25 @@ body {
       scrollbar-color: #888 #212121;
     }
   }
+  
+  /* Additional global scrollbar defaults */
+  ::-webkit-scrollbar {
+    width: 14px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: #424242;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: #555;
+  }
 }
 
 
+
+/* Base styles including color variables and typography */
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -58,6 +76,7 @@ body {
     --radius: 0.5rem;
     --primary-text: #ffffff;
   }
+  
   .dark {
     --background: 0 0% 3.9%;
     --foreground: 0 0% 98%;
@@ -85,33 +104,157 @@ body {
     --chart-5: 340 75% 55%;
     --primary-text: #000000;
   }
+  
+  /* Apply global background and text colors */
+* {
+  @apply border-border;
+}
+body {
+  @apply bg-background text-foreground;
 }
 
-@layer base {
-  * {
-    @apply border-border;
+/* Base typography and element styling */
+
+/* Headings */
+h1, h2, h3, h4, h5, h6 {
+  font-weight: 600;
+  line-height: 1.2;
+  margin: 0.5em 0 0.5em;
+  color: #D1D5DB;
+}
+h1 {
+  font-size: 1.65rem; /* adjusted from 2.25rem */
+}
+h2 {
+  font-size: 1.45rem; /* adjusted from 1.875rem */
+}
+h3 {
+  font-size: 1.25rem; /* adjusted from 1.5rem */
+}
+h4 {
+  font-size: 1.0rem;
+}
+h5 {
+  font-size: 0.85rem; /* adjusted from 1.125rem */
+}
+h6 {
+  font-size: 0.6rem;
+}
+
+/* Paragraphs */
+p,ul,ol,dl{
+  font-size: 0.9rem /* 14px */;
+  line-height: 1.25rem /* 20px */;
+  color: #F5F5F5;
+}
+
+/* Blockquotes */
+blockquote {
+  border-left: 4px solid theme('colors.gray.300');
+  padding-left: 1em;
+  color: #E0E0E0;
+  margin: 1em 0;
+  font-style: italic;
+}
+
+
+
+/* Dark mode table styling */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 1em 0;
+  background-color: #2f2f2f; /* dark background */
+  color: #E0E0E0;
+}
+
+th, td {
+  padding: 0.75em 1em;
+  border: 1px solid #444444; /* dark border */
+}
+
+th {
+  background-color: #3a3a3a; /* slightly lighter for headers */
+  font-weight: 600;
+  color: #ffffff;
+}
+
+/* Inline code elements */
+code {
+  background-color: #444444;
+  color: #F5F5F5;
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-family: Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.875rem;
+}
+
+a {
+  color: #0077cc;
+  text-decoration: none;
+  transition: color 0.3s ease, transform 0.3s ease;
+}
+
+a:hover {
+  color: #3498db; /* Changes text color */
+  transform: scale(1.1); /* Slightly enlarges the link */
+}
+
+/* Preformatted text blocks */
+pre {
+  background-color: #1e1e1e;
+  color: #F5F5F5;
+  padding: 1em;
+  overflow: auto;
+  border-radius: 0.5rem;
+}
+
+/* Medium screens (max-width: 1024px) */
+@media (max-width: 1024px) {
+  h1 { font-size: 1.375rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.125rem; }
+  h4 { font-size: 1rem; }
+  h5 { font-size: 0.875rem; }
+  h6 { font-size: 0.75rem; }
+  
+  p {
+    font-size: 0.875rem /* 14px */;
+    line-height: 1.25rem /* 20px */;
+}
   }
-  body {
-    @apply bg-background text-foreground;
+  
+  table, pre {
+    font-size: 0.9rem;
   }
 }
 
-/* width */
-::-webkit-scrollbar {
-  width: 14px;
+/* Small screens (max-width: 640px) */
+@media (max-width: 640px) {
+  h1 { font-size: 1.375rem; }
+  h2 { font-size: 1.25rem; }
+  h3 { font-size: 1.125rem; }
+  h4 { font-size: 1rem; }
+  h5 { font-size: 0.875rem; }
+  h6 { font-size: 0.75rem; }
 }
 
-/* Track */
-::-webkit-scrollbar-track {
-  background: transparent;
-}
+    p {
+      margin: 0.5em 0;
+    }
+    
+    /* Reduce padding for table cells on small screens */
+    th, td {
+      padding: 0.5em 0.75em;
+    }
+    
+    /* Adjust code and pre text sizes */
+    code {
+      font-size: 0.8rem;
+    }
+    pre {
+      font-size: 0.8rem;
+      padding: 0.75em;
+    }
+  
 
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: #424242;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #555;
-}

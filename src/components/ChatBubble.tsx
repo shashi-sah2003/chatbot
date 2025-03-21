@@ -9,17 +9,19 @@ import {
 } from "react-icons/ai";
 import { FeedbackContext } from "./FeedbackContext";
 import { motion, AnimatePresence } from "framer-motion";
-import AnimatedText from "@/components/AnimatedText";
+import AnimatedText from "./AnimatedText";
+import AnimatedHTMLText from "./AnimatedHTMLText";
+import AILoading from "./AILoading";
+import { useStreaming } from "./StreamingContext";
 
 interface ChatBubbleProps {
   sender: "user" | "ai";
-  message: string;
-  fullText?: string;
+  message: React.ReactNode;
+  fullText?: React.ReactNode;
   isLoading?: boolean;
   stream?: boolean;
   associatedUserQuery?: string;
   showFeedbackIcons?: boolean;
-  onStreamComplete?: () => void;
 }
 
 const ChatBubble = ({
@@ -30,56 +32,63 @@ const ChatBubble = ({
   stream = false,
   associatedUserQuery,
   showFeedbackIcons = false,
-  onStreamComplete,
 }: ChatBubbleProps) => {
   const isUser = sender === "user";
+  const { setIsStreaming, setIsStreamingComplete, isStreamingComplete } =useStreaming();
   const { openFeedback } = useContext(FeedbackContext);
-
   const [feedback, setFeedback] = useState<"none" | "like" | "dislike">("none");
   const [feedbackDisabled, setFeedbackDisabled] = useState(false);
-  const [displayedText, setDisplayedText] = useState<string>(
-    sender === "ai" ? "" : message
-  );
-
-  useEffect(() => {
-    if (sender === "ai" && stream && fullText) {
-      // In a real scenario, update displayedText gradually; here we set fullText immediately.
-      setDisplayedText(fullText);
-      if (onStreamComplete) onStreamComplete();
-    } else {
-      setDisplayedText(message);
-    }
-  }, [sender, stream, fullText, message, onStreamComplete]);
+  const [animationDone, setAnimationDone] = useState(false);
 
   const handleLikeClick = () => {
     if (feedbackDisabled) return;
     setFeedback("like");
     setFeedbackDisabled(true);
-    openFeedback(associatedUserQuery || "", displayedText, "like");
+    openFeedback(
+      associatedUserQuery || "",
+      typeof message === "string" ? message : "",
+      "like"
+    );
   };
 
   const handleDislikeClick = () => {
     if (feedbackDisabled) return;
     setFeedback("dislike");
     setFeedbackDisabled(true);
-    openFeedback(associatedUserQuery || "", displayedText, "dislike");
+    openFeedback(
+      associatedUserQuery || "",
+      typeof message === "string" ? message : "",
+      "dislike"
+    );
   };
 
-  const bubbleClasses = isUser
-    ? "chat-bubble bg-[#2f2f2f] text-white text-sm p-2 rounded-xl max-w-[80%]"
-    : "chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[80%]";
+
+  
+
+
+  // Check if fullText is a full HTML document
+  const isFullHTML =
+    typeof fullText === "string" &&
+    (fullText.trim().startsWith("<!DOCTYPE") ||
+      fullText.trim().startsWith("<html"));
+
+  // Ensure displayText is a string for plain text streaming
+  const displayText =
+    typeof fullText === "string"
+      ? fullText
+      : typeof message === "string" || typeof message === "number"
+      ? String(message)
+      : "";
 
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className={bubbleClasses}>{message}</div>
+        <div className="chat-bubble bg-[#2f2f2f] text-white text-sm p-2 rounded-xl max-w-[80%]">
+          {message}
+        </div>
       </div>
     );
   }
-
-  // Only show feedback icons if not loading and either not streaming or full text is displayed
-  const showFeedback =
-    showFeedbackIcons && !isLoading && (!stream || displayedText === fullText);
 
   return (
     <AnimatePresence>
@@ -94,46 +103,26 @@ const ChatBubble = ({
           <div className="flex items-center justify-center w-8 h-8 text-white">
             <Bot size={18} />
           </div>
-          <div className={bubbleClasses}>
-            {isLoading && stream && displayedText !== fullText ? (
-              <motion.div
-                initial="hidden"
-                animate="visible"
-                variants={{
-                  hidden: { opacity: 0 },
-                  visible: {
-                    opacity: 1,
-                    transition: { staggerChildren: 0.05 },
-                  },
-                }}
-                className="flex items-center text-xs text-gray-400 mt-1"
-              >
-                {"Responding_back_from_server".split("").map((char, index) => (
-                  <motion.span
-                    key={index}
-                    variants={{
-                      hidden: { opacity: 0, y: 10 },
-                      visible: { opacity: 1, y: 0 },
-                    }}
-                    className="inline-block"
-                  >
-                    {char}
-                  </motion.span>
-                ))}
-                <motion.span
-                  className="inline-block ml-1"
-                  animate={{ opacity: [0, 1, 0] }}
-                  transition={{ repeat: Infinity, duration: 1 }}
-                >
-                  ...
-                </motion.span>
-              </motion.div>
-            ) : (
-              <AnimatedText text={displayedText} />
-            )}
+          <div className="ml-2 flex-1">
+            <div className="chat-bubble bg-[#212121] w-full">
+              {isFullHTML && fullText &&
+                (
+                <AnimatedHTMLText
+                  htmlString={fullText as string}
+                  speed={3}
+                />
+              )}
+              {!isFullHTML && displayText && (
+                <AnimatedText
+                  text={displayText}
+                  speed={3}
+                />
+              )}
+              {isLoading && <AILoading />}
+            </div>
           </div>
         </div>
-        {showFeedback && (
+        {showFeedbackIcons && isStreamingComplete && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

@@ -1,21 +1,23 @@
+// ChatInput.tsx
 "use client";
 
-import { useState, useRef, FormEvent, useLayoutEffect } from "react";
+import { useState, useRef, useEffect, FormEvent, useLayoutEffect } from "react";
 import { Button } from "./ui/button";
-import { ArrowUp, Loader2 } from "lucide-react"; // Import Loader2 for the spinner icon
+import { ArrowUp, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { Textarea } from "./ui/textarea";
+import { useStreaming } from "./StreamingContext";
 
 interface ChatInputProps {
-  onSubmit: (query: string) => Promise<void>; // Expect onSubmit to return a Promise
-  onNewSession?: () => void; // No longer used here
+  onSubmit: (query: string) => Promise<void>;
   conversationOpen?: boolean;
 }
 
 const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
   const [prompt, setPrompt] = useState("");
-  const [loading, setLoading] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const { isStreaming, isStreamingComplete, setIsStreaming } = useStreaming();
+  const [submitClicked, setSubmitClicked] = useState(false);
 
   const autoResize = () => {
     if (textareaRef.current) {
@@ -36,21 +38,28 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
     autoResize();
   }, [prompt]);
 
+  // New useEffect: Set streaming to true as soon as the submit button is pressed
+  useEffect(() => {
+    if (submitClicked) {
+      setIsStreaming(true);
+    }
+  }, [submitClicked, setIsStreaming]);
+
   const handleSendMessage = async (e?: FormEvent) => {
     if (e) e.preventDefault();
     if (!prompt) return;
-    if (loading) {
-      toast.error("Please wait for the model to finish its response!");
+    if (isStreaming || !isStreamingComplete) {
+      toast.error("Please wait for the current response to finish!");
       return;
     }
-    setLoading(true);
+    setSubmitClicked(true);
     try {
       await onSubmit(prompt);
     } catch (err) {
       toast.error("Error while sending query!");
     }
     setPrompt("");
-    setLoading(false);
+    setSubmitClicked(false); // Reset the submit flag after the query is handled
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -67,7 +76,7 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
           <Textarea
             ref={textareaRef}
             placeholder="Ask about DTU..."
-            disabled={loading}
+            disabled={isStreaming || !isStreamingComplete}
             className="w-full bg-transparent rounded-2xl text-white placeholder:text-zinc-400 resize-none border-zinc-600 outline-none focus:outline-none focus:ring-0 pb-12 focus:border-white border"
             value={prompt}
             onChange={(e) => {
@@ -81,10 +90,10 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
           <div className="absolute bottom-1 right-3.5 flex items-center size-8">
             <Button
               type="submit"
-              disabled={!prompt || loading}
+              disabled={!prompt || isStreaming || !isStreamingComplete}
               className="rounded-full px-2 border dark:border-zinc-600 bg-white text-black hover:bg-gray-100 transition-transform duration-150"
             >
-              {loading ? (
+              {isStreaming || !isStreamingComplete ? (
                 <Loader2 size={8} className="animate-spin" />
               ) : (
                 <ArrowUp size={8} />
