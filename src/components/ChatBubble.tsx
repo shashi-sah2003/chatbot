@@ -9,10 +9,9 @@ import {
 } from "react-icons/ai";
 import { FeedbackContext } from "./FeedbackContext";
 import { motion, AnimatePresence } from "framer-motion";
-import AnimatedText from "./AnimatedText";
-import AnimatedHTMLText from "./AnimatedHTMLText";
 import AILoading from "./AILoading";
 import { useStreaming } from "./StreamingContext";
+import MarkdownRenderer from './react-renderer';
 
 interface ChatBubbleProps {
   sender: "user" | "ai";
@@ -34,7 +33,7 @@ const ChatBubble = ({
   showFeedbackIcons = false,
 }: ChatBubbleProps) => {
   const isUser = sender === "user";
-  const { setIsStreaming, setIsStreamingComplete, isStreamingComplete } =useStreaming();
+  const {isStreamingComplete } =useStreaming();
   const { openFeedback } = useContext(FeedbackContext);
   const [feedback, setFeedback] = useState<"none" | "like" | "dislike">("none");
   const [feedbackDisabled, setFeedbackDisabled] = useState(false);
@@ -64,9 +63,6 @@ const ChatBubble = ({
 
 
   
-
-
-  // Check if fullText is a full HTML document
   const isFullHTML =
     typeof fullText === "string" &&
     (fullText.trim().startsWith("<!DOCTYPE") ||
@@ -105,18 +101,8 @@ const ChatBubble = ({
           </div>
           <div className="ml-2 flex-1">
             <div className="chat-bubble bg-[#212121] w-full">
-              {isFullHTML && fullText &&
-                (
-                <AnimatedHTMLText
-                  htmlString={fullText as string}
-                  speed={3}
-                />
-              )}
               {!isFullHTML && displayText && (
-                <AnimatedText
-                  text={displayText}
-                  speed={3}
-                />
+               <MarkdownRenderer content={displayText} speed={3}/>
               )}
               {isLoading && <AILoading />}
             </div>
