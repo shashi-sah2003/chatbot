@@ -13,7 +13,7 @@ const AILoading = () => (
     }}
     className="flex items-center text-xs text-gray-400 mt-1"
   >
-    {"Responding_back_from_server".split("").map((char, index) => (
+    {"Loading".split("").map((char, index) => (
       <motion.span
         key={index}
         variants={{

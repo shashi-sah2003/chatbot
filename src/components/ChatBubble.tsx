@@ -37,7 +37,6 @@ const ChatBubble = ({
   const { openFeedback } = useContext(FeedbackContext);
   const [feedback, setFeedback] = useState<"none" | "like" | "dislike">("none");
   const [feedbackDisabled, setFeedbackDisabled] = useState(false);
-  const [animationDone, setAnimationDone] = useState(false);
 
   const handleLikeClick = () => {
     if (feedbackDisabled) return;

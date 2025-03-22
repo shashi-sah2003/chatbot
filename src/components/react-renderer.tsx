@@ -6,7 +6,6 @@ import rehypeRaw from "rehype-raw";
 import rehypeSanitize from "rehype-sanitize";
 import rehypeHighlight from "rehype-highlight";
 import "prismjs/themes/prism-tomorrow.css";
-import "./markdown.css";
 import { streamChat } from "@/components/streamChatUtils";
 import { useStreaming } from "./StreamingContext";
 

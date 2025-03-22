@@ -25,7 +25,7 @@ interface ChatPageProps {
 }
 
 // Dummy full Markdown document response simulating an LLM output
-const sampleMarkdown =`backend connect karle bhai`;
+const sampleMarkdown =`Unexpected error occurred. Please try again later.`;
 
 export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps) {
   const [containerRef, bottomRef] = useScrollToBottom<HTMLDivElement>();
@@ -51,7 +51,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;  // Define the base URL
-      const response = await axios.post(`http://127.0.0.1:8000${apiEndpoint}`, { query: userQuery });
+      const response = await axios.post(`${baseUrl}${apiEndpoint}`, { query: userQuery });
       let fullText = response.data.response;
       // For demonstration, if fullText is not provided, we use sampleMarkdown.
       if (!fullText || typeof fullText !== "string") {
@@ -153,79 +153,3 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
 
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-// ## There are multiple students named Anmol. Here's their CGPA:
-
-// | Name                      | CGPA    |
-// |---------------------------|---------|
-// | Anmol Ahsaas Sharan       | 9.93    |
-// | Anmol Bhardwaj            | 8.47    |
-// | Anmol Pandey              | 8.32    |
-// | Anmol Dhanker             | 6.56    |
-// | Anmol Chaudhary           | 5.67    |
-// | Anmol Singh Fulanekar     | 5.54    |
-// | Anmol Sharma              | 5.29 👍 |
-
-
-
-
-
-
-
-
-// # Delhi Technological University (DTU)
-
-// *Formerly known as Delhi College of Engineering (DCE)*
-
-// ---
-
-// ## About DTU
-
-// Delhi Technological University, located in New Delhi, India, is one of the country's premier engineering institutions. Established in 1941, DTU has a rich legacy of academic excellence and innovation in engineering and technology.
-
-// ---
-
-// ## Academic Programs
-
-// DTU offers a diverse range of undergraduate, postgraduate, and doctoral programs in fields such as engineering, technology, management, and architecture. The curriculum is designed to foster critical thinking, problem-solving, and hands-on learning.
-
-// ---
-
-// ## Campus & Facilities
-
-// The campus is well-equipped with modern infrastructure including state-of-the-art laboratories, libraries, and recreational facilities, creating an environment conducive to both academic and personal growth.
-
-// ---
-
-// ## Research & Collaborations
-
-// DTU is committed to research and innovation, collaborating with industry leaders and academic institutions worldwide. Its initiatives aim to bridge the gap between theoretical knowledge and practical application.
-
-// ---
-
-// ## Learn More
-
-// For more details, please visit the official [DTU website](https://www.dtu.ac.in).
