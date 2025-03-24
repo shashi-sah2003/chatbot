@@ -15,6 +15,7 @@ const FeedbackDialog = () => {
     defaultValues: {
       userQuery: "",
       aiResponse: "",
+      sentiment: "",
       message: ""
     }
   });
@@ -24,6 +25,7 @@ const FeedbackDialog = () => {
     if (feedbackData.isOpen) {
       setValue("userQuery", feedbackData.userQuery);
       setValue("aiResponse", feedbackData.aiResponse);
+      setValue("sentiment", feedbackData.sentiment === "like" ? "positive" : "negative");
       setValue("message", "");
     }
   }, [feedbackData, setValue]);
@@ -74,13 +76,17 @@ const FeedbackDialog = () => {
 
               {/* Sentiment Section */}
               <div
-                className={`mb-3 p-2 rounded ${
-                  feedbackData.sentiment === "like" ? "bg-green-500" : "bg-red-500"
-                }`}
+                className={`mb-3 p-2 rounded ${feedbackData.sentiment === "like" ? "bg-green-500" : "bg-red-500"
+                  }`}
               >
                 <p className="text-white font-semibold">
                   Sentiment: {feedbackData.sentiment === "like" ? "Positive" : "Negative"}
                 </p>
+                <input
+                  type="hidden"
+                  {...register("sentiment")}
+                  value={feedbackData.sentiment === "like" ? "positive" : "negative"}
+                />
               </div>
 
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-3">
