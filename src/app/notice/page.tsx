@@ -120,7 +120,7 @@ const getRadioColor = (value: string) => {
     case "ForthcomingEvent":
       return "#ba68c8";
     default:
-      return "#3a3a3a"; 
+      return "#3a3a3a";  
   }
 };
 
