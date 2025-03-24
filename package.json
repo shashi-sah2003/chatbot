@@ -15,6 +15,7 @@
     "@mui/icons-material": "^6.4.8",
     "@mui/material": "^6.4.8",
     "@mui/styled-engine-sc": "^6.4.3",
+    "@radix-ui/react-hover-card": "^1.1.6",
     "@radix-ui/react-slot": "^1.1.2",
     "@tabler/icons-react": "^3.30.0",
     "@tailwindcss/typography": "^0.5.16",

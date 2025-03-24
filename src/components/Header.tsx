@@ -5,11 +5,16 @@ import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import toast from "react-hot-toast";
 import { FiChevronDown } from "react-icons/fi";
+import {
+  HoverCard,
+  HoverCardContent,
+  HoverCardTrigger,
+} from "@radix-ui/react-hover-card";
 
 const menuOptions = [
   { id: 0, label: "DTU Assistant", description: "General DTU inquiries", path: "/" },
-  { id: 1, label: "Result'26", description: "ask for result of batch 2k26", path: "/result_26" },
-  { id: 2, label: "Result'27", description: "ask for result of batch 2k27", path: "/result_27" },
+  { id: 1, label: "Result-26", description: "ask for result of batch 2k26", path: "/result_26" },
+  { id: 2, label: "Result-27", description: "ask for result of batch 2k27", path: "/result_27" },
   { id: 3, label: "DTU Notice", description: "ask for Notice", path: "/notice" },
 ];
 
@@ -18,8 +23,6 @@ const Header = () => {
   const pathname = usePathname();
   const [currentButton, setCurrentButton] = useState("DTU ChatBot");
   const [filteredMenuItems, setFilteredMenuItems] = useState(menuOptions);
-
-  // State for conversation open, controlled by ChatPage events.
   const [conversationOpen, setConversationOpen] = useState(false);
 
   // Listen for conversation state changes dispatched from ChatPage.
@@ -57,9 +60,10 @@ const Header = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between h-16 w-full">
+      <div className="flex items-center justify-between h-16 w-full px-4">
         <div className="flex items-center gap-4">
-          <div className="dropdown dropdown-hover">
+          {/* Mobile: Dropdown Menu (visible below md breakpoint) */}
+          <div className="dropdown dropdown-hover md:hidden">
             <div
               tabIndex={0}
               role="button"
@@ -70,7 +74,7 @@ const Header = () => {
                   currentButton === "" ? "max-w-0 opacity-0" : "max-w-xs opacity-100"
                 }`}
               >
-                {currentButton}
+                {currentButton || "Menu"}
               </span>
               <FiChevronDown size={20} className="text-lg" />
             </div>
@@ -94,11 +98,51 @@ const Header = () => {
               ))}
             </ul>
           </div>
-          <Link href="/aboutus" className="text-white hover:text-gray-300 font-semibold">
-            About Us
-          </Link>
+          {/* Mobile: Always-visible About Us link */}
+          <div className="md:hidden">
+            <Link href="/aboutus" className="text-white hover:text-gray-300 font-semibold">
+              About Us
+            </Link>
+          </div>
+          {/* Tablet & Laptop: Inline Navigation (visible on md and above) */}
+          <nav className="hidden md:flex items-center gap-6">
+            {menuOptions.map((item) => {
+              const isActive = pathname === item.path;
+              return (
+                <div key={item.id}>
+                  {isActive ? (
+                    <Link
+                      href={item.path}
+                      className="text-white font-bold border-b-2 border-primary hover:text-gray-300"
+                    >
+                      {item.label}
+                    </Link>
+                  ) : (
+                    <HoverCard>
+                      <HoverCardTrigger asChild>
+                        <Link
+                          href={item.path}
+                          onClick={() => handleMenuItemClick(item.path)}
+                          className="text-gray-300 hover:text-white  transition-colors"
+                        >
+                          {item.label}
+                        </Link>
+                      </HoverCardTrigger>
+                      <HoverCardContent className="bg-[#2F2F2F] text-white p-2 rounded shadow-lg">
+                        <p className="text-sm font-semibold">{item.description}</p>
+                      </HoverCardContent>
+                    </HoverCard>
+                  )}
+                </div>
+              );
+            })}
+            {/* About Us Link in inline navigation */}
+            <Link href="/aboutus" className="text-white hover:text-gray-300 font-semibold">
+              About Us
+            </Link>
+          </nav>
         </div>
-        {/* New Session button with styling similar to About Us */}
+        {/* New Session button */}
         <div>
           {conversationOpen && (
             <button
