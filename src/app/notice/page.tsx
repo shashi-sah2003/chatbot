@@ -50,6 +50,7 @@ export default function Notices() {
   const [readStatus, setReadStatus] = useState<Record<number, boolean>>({});
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true); // Add a loading state
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
 
   useEffect(() => {
     const initialStatus = notifications.reduce((acc, _, index) => {
@@ -64,7 +65,7 @@ export default function Notices() {
       setLoading(true); // Set loading to true before fetching
       try {
         const response = await axios.get(
-          `http://35.238.33.197:5000/chat/information`
+          `${baseUrl}/chat/information`
         );
         if (response.data.response && Array.isArray(response.data.response)) {
           setNotifications(response.data.response);
