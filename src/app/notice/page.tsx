@@ -96,8 +96,6 @@ export default function notices() {
         return "#4dabf5";
       case "news":
         return "#66bb6a";
-      case "events":
-        return "#ba68c8";
       case "forthcoming_events":
         return "#ffa260";
       default:
@@ -111,8 +109,6 @@ export default function notices() {
         return "#4dabf5";
       case "news":
         return "#66bb6a";
-      case "events":
-        return "#ba68c8";
       case "forthcoming_events":
         return "#ffa260";
       default:
@@ -184,21 +180,6 @@ export default function notices() {
                 />
               }
               label="news"
-              sx={{ color: "#f5f5f5" }}
-            />
-            <FormControlLabel
-              value="events"
-              control={
-                <Radio
-                  sx={{
-                    color: getRadioColor("events"),
-                    "&.Mui-checked": {
-                      color: getRadioColor("events"),
-                    },
-                  }}
-                />
-              }
-              label="events"
               sx={{ color: "#f5f5f5" }}
             />
              <FormControlLabel
