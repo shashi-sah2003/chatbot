@@ -35,8 +35,16 @@ const NotificationDot = styled(CircleIcon)({
   marginRight: 8,
 });
 
-export default function notices() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+interface Notification {
+  title: string;
+  content: string;
+  timestamp: string;
+  category: string;
+  url: string;
+}
+
+export default function Notices() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState<string | false>(false);
   const [readStatus, setReadStatus] = useState<Record<number, boolean>>({});
