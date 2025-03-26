@@ -35,13 +35,22 @@ const NotificationDot = styled(CircleIcon)({
   marginRight: 8,
 });
 
-export default function notices() {
-  const [notifications, setNotifications] = useState<any[]>([]);
+interface Notification {
+  title: string;
+  content: string;
+  timestamp: string;
+  category: string;
+  url: string;
+}
+
+export default function Notices() {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState<string | false>(false);
   const [readStatus, setReadStatus] = useState<Record<number, boolean>>({});
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true); // Add a loading state
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
 
   useEffect(() => {
     const initialStatus = notifications.reduce((acc, _, index) => {
@@ -56,7 +65,7 @@ export default function notices() {
       setLoading(true); // Set loading to true before fetching
       try {
         const response = await axios.get(
-          `http://35.238.33.197:5000/chat/information`
+          `${baseUrl}/chat/information`
         );
         if (response.data.response && Array.isArray(response.data.response)) {
           setNotifications(response.data.response);
