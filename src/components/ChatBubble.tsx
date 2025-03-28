@@ -96,7 +96,7 @@ const ChatBubble = ({
           <div className="flex items-center justify-center w-8 h-8 text-white">
             <Bot size={18} />
           </div>
-          <div className="ml-2 flex-1">
+          <div className="ml-2 flex-1 overflow-x-hidden">
             <div className="chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[80%] break-words">
               {!isFullHTML && displayText && (
                 <MarkdownRenderer content={displayText} speed={3}/>

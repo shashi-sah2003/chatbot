@@ -17,15 +17,21 @@ interface AnimatedMarkdownTextProps {
 
 const AnimatedMarkdownText: React.FC<AnimatedMarkdownTextProps> = ({
   markdownString,
-  speed = 10,
+  speed = 5,
   onComplete,
 }) => {
   const [displayedMarkdown, setDisplayedMarkdown] = useState("");
   const completedRef = useRef(false);
-  const { setIsStreaming, setIsStreamingComplete } = useStreaming();
+  const { isStreaming, setIsStreaming, setIsStreamingComplete } = useStreaming();
+  const isStreamingRef = useRef(isStreaming);
+
+  // Update the ref whenever isStreaming changes
+  useEffect(() => {
+    isStreamingRef.current = isStreaming;
+  }, [isStreaming]);
 
   useEffect(() => {
-    // Reset state and mark streaming as active.
+    // Reset state and start streaming
     setDisplayedMarkdown("");
     setIsStreaming(true);
     setIsStreamingComplete(false);
@@ -42,8 +48,11 @@ const AnimatedMarkdownText: React.FC<AnimatedMarkdownTextProps> = ({
           setIsStreaming(false);
           setIsStreamingComplete(true);
         }
-      }
+      },
+      () => isStreamingRef.current // Check current isStreaming value
     );
+
+    // Cleanup interval on unmount or when dependencies change
     return () => clearInterval(intervalId);
   }, [markdownString, speed, onComplete, setIsStreaming, setIsStreamingComplete]);
 
@@ -52,13 +61,11 @@ const AnimatedMarkdownText: React.FC<AnimatedMarkdownTextProps> = ({
       remarkPlugins={[remarkGfm]}
       rehypePlugins={[rehypeRaw, rehypeSanitize, rehypeHighlight]}
       components={{
-        // Custom link handling
         a: ({ node, ...props }) => (
           <a {...props} target="_blank" rel="noopener noreferrer" />
         ),
-        // Custom table handling
         table: ({ node, ...props }) => (
-          <div className="overflow-x-auto">
+          <div className="overflow-x-hidden">
             <table {...props} className="min-w-full" />
           </div>
         ),
@@ -77,7 +84,7 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, speed }) => {
   return (
-    <div className=" max-w-full p-0 m-0">
+    <div className="max-w-full p-0 m-0">
       <AnimatedMarkdownText markdownString={content} speed={speed} />
     </div>
   );

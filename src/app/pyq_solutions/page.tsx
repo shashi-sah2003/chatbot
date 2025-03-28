@@ -21,44 +21,26 @@ export interface ChatMessage {
 
 const sampleMarkdown = `Unexpected error occurred. Please try again later.`;
 
-// Define a type for a question paper
-interface QuestionPaper {
-  id: number;
-  subjectName: string;
-  subjectCode: string;
-  year: number;
-  examType: string;
-  month: string;
-  dept: string;
-  pdfUrl: string;
-  filePath: string;
-}
-
-// Component to render the list of question papers
-const QuestionPapersList = ({ papers }: { papers: QuestionPaper[] }) => {
-  return (
-    <div className="space-y-4">
-      {papers.map((paper) => (
-        <div key={paper.id} className="p-4 bg-gray-800 rounded-md">
-          <h3 className="text-xl font-semibold text-white">
-            {paper.subjectName} ({paper.subjectCode})
-          </h3>
-          <p className="text-gray-300">
-            {paper.month} {paper.year} -{" "}
-            {paper.examType === "Mid" ? "Mid Sem" : paper.examType === "End" ? "End Sem" : paper.examType}
-          </p>
-          <a
-            href={paper.pdfUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 underline mt-2 inline-block"
-          >
-            See Paper
-          </a>
-        </div>
-      ))}
-    </div>
-  );
+// Function to generate a markdown table from the CSV-like array response
+const generateMarkdownTable = (papersArray: any[]): string => {
+  if (papersArray.length === 0) {
+    return "Currently i can't help you with this query😔.";
+  }
+  const header = "Subject Code | Year | Sem | Month | Branch | Link |\n| --- | --- | --- | --- | --- | --- |\n";
+  const rows = papersArray
+    .map((paper: any[]) => {
+      // Omit the first (id) and last (filePath) columns
+      const subjectCode = paper[2];
+      const year = paper[3];
+      const examType = paper[4];
+      const month = paper[5];
+      const dept = paper[6];
+      const pdfUrl = paper[7];
+      const link = `[View Paper](${pdfUrl})`;
+      return `|${subjectCode} | ${year} | ${examType} | ${month} | ${dept} | ${link} |`;
+    })
+    .join("\n");
+  return header + rows;
 };
 
 export default function ChatPage() {
@@ -66,7 +48,6 @@ export default function ChatPage() {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isStreamingComplete, setIsStreamingComplete] = useState(true);
-  const [questionPapers, setQuestionPapers] = useState<QuestionPaper[] | null>(null);
   const welcomeMessage = "Welcome to Pyq's Section";
 
   // Clear local chat history on mount
@@ -88,30 +69,33 @@ export default function ChatPage() {
     ]);
 
     try {
-      const response = await axios.post(`https://api.res-umer.tech/v2/pyq_papers`, { query: userQuery });
-
-      // If the response data is an array then assume it's a list of question papers
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      const response = await axios.post(`${baseUrl}/pyq_papers`, { query: userQuery });
+      let papersArray: any[] | null = null;
+      
+      // Check if the response is an array
       if (Array.isArray(response.data.response)) {
-        const papersArray = response.data.response;
-        // Map the array to our QuestionPaper type:
-        const papers: QuestionPaper[] = papersArray.map((paper: any[]) => ({
-          id: paper[0],
-          subjectName: paper[1],
-          subjectCode: paper[2],
-          year: paper[3],
-          examType: paper[4],
-          month: paper[5],
-          dept: paper[6],
-          pdfUrl: paper[7],
-          filePath: paper[8],
-        }));
-        setQuestionPapers(papers);
+        papersArray = response.data.response;
+      } else if (typeof response.data.response === "string") {
+        // Attempt to parse the string as JSON
+        try {
+          const parsed = JSON.parse(response.data.response);
+          if (Array.isArray(parsed)) {
+            papersArray = parsed;
+          }
+        } catch (e) {
+          // If parsing fails, leave papersArray as null
+        }
+      }
 
-        // Update the AI message in chat history
+      if (papersArray) {
+        console.log(papersArray);
+        const markdownTable = generateMarkdownTable(papersArray);
+        // Update the AI message in chat history with the markdown table
         setChatHistory((prev) =>
           prev.map((msg) =>
             msg.id === aiMsgId
-              ? { ...msg, message: "Question papers loaded.", fullText: "Question papers loaded.", isLoading: false, stream: false }
+              ? { ...msg, message: markdownTable, fullText: markdownTable, isLoading: false, stream: false }
               : msg
           )
         );
@@ -143,7 +127,6 @@ export default function ChatPage() {
   // Handle a new session event
   const handleNewSession = () => {
     setChatHistory([]);
-    setQuestionPapers(null);
     localStorage.removeItem("chatHistory");
   };
 
@@ -174,7 +157,7 @@ export default function ChatPage() {
 
           {conversationOpen && (
             <div className="flex-1 overflow-x-hidden">
-              <div ref={containerRef} className="flex flex-col space-y-4 p-4">
+              <div ref={containerRef} className="flex flex-col space-y-4 p-4 ">
                 {chatHistory.map((msg, index) => {
                   let associatedUserQuery = "";
                   let showFeedbackIcons = false;
@@ -213,14 +196,6 @@ export default function ChatPage() {
 
           {/* Render UploadQuestionPaper below ChatInput if welcomeMessage exists */}
           {welcomeMessage && <UploadQuestionPaper />}
-
-          {/* Render the list of question papers if available */}
-          {questionPapers && (
-            <div className="p-4">
-              <h2 className="text-2xl font-semibold text-white mb-4">Question Papers</h2>
-              <QuestionPapersList papers={questionPapers} />
-            </div>
-          )}
         </div>
         <FeedbackDialog />
       </FeedbackProvider>

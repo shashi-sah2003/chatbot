@@ -1,9 +1,8 @@
-// ChatInput.tsx
 "use client";
 
 import { useState, useRef, useEffect, FormEvent, useLayoutEffect } from "react";
 import { Button } from "./ui/button";
-import { ArrowUp, Loader2 } from "lucide-react";
+import { ArrowUp, CircleStop } from "lucide-react"; // Updated: Using CircleStop instead of Loader2
 import toast from "react-hot-toast";
 import { Textarea } from "./ui/textarea";
 import { useStreaming } from "./StreamingContext";
@@ -16,7 +15,7 @@ interface ChatInputProps {
 const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
   const [prompt, setPrompt] = useState("");
   const textareaRef = useRef<HTMLTextAreaElement>(null);
-  const { isStreaming, isStreamingComplete, setIsStreaming } = useStreaming();
+  const { isStreaming, isStreamingComplete, setIsStreaming, setIsStreamingComplete } = useStreaming();
   const [submitClicked, setSubmitClicked] = useState(false);
 
   const autoResize = () => {
@@ -38,6 +37,19 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
     autoResize();
   }, [prompt]);
 
+  // New useEffect to reset streaming state when a new session is triggered
+  useEffect(() => {
+    const handleNewSession = () => {
+      // Reset streaming state so that the chat input icon reverts to ArrowUp
+      setIsStreaming(false);
+      setIsStreamingComplete(true);
+      // Optionally, clear the prompt as well:
+      setPrompt("");
+    };
+    window.addEventListener("new-session", handleNewSession);
+    return () => window.removeEventListener("new-session", handleNewSession);
+  }, [setIsStreaming, setIsStreamingComplete]);
+
   // New useEffect: Set streaming to true as soon as the submit button is pressed
   useEffect(() => {
     if (submitClicked) {
@@ -48,6 +60,7 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
   const handleSendMessage = async (e?: FormEvent) => {
     if (e) e.preventDefault();
     if (!prompt) return;
+    // Prevent sending a new query if a streaming response is in progress
     if (isStreaming || !isStreamingComplete) {
       toast.error("Please wait for the current response to finish!");
       return;
@@ -60,6 +73,12 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
     }
     setPrompt("");
     setSubmitClicked(false); // Reset the submit flag after the query is handled
+  };
+
+  // New function to handle stopping the streaming response
+  const handleStopStreaming = () => {
+    setIsStreaming(false);
+    setIsStreamingComplete(true);
   };
 
   const handleKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -91,12 +110,18 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
 
           <div className="absolute inset-y-0 right-3.5 flex items-center">
             <Button
-              type="submit"
-              disabled={!prompt || isStreaming || !isStreamingComplete}
+              type={isStreaming || !isStreamingComplete ? "button" : "submit"}
+              onClick={(e) => {
+                if (isStreaming || !isStreamingComplete) {
+                  e.preventDefault();
+                  handleStopStreaming();
+                }
+              }}
+              disabled={!isStreaming && !prompt}
               className="rounded-full px-2 border dark:border-zinc-600 bg-white text-black hover:bg-gray-100 transition-transform duration-150"
             >
               {isStreaming || !isStreamingComplete ? (
-                <Loader2 size={8} className="animate-spin" />
+                <CircleStop size={8} />
               ) : (
                 <ArrowUp size={8} />
               )}

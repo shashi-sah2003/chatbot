@@ -65,8 +65,8 @@ export default function Notices() {
     const fetchNotifications = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(
-          `https://api.res-umer.tech/v2/chat/information`
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      const response = await axios.get(`${baseUrl}/chat/information`
         );
         if (response.data.response && Array.isArray(response.data.response)) {
           setNotifications(response.data.response);
@@ -138,9 +138,9 @@ export default function Notices() {
   }
 
   return (
-    <div className="flex flex-col h-screen w-full mx-auto bg-[#212121] p-4 sm:p-6 pb-20 overflow-x-hidden overflow-y-auto">
+    <div className="flex flex-col h-screen w-full max-w-screen-md  pb-16 mx-auto bg-[#212121]">
       {/* Search Input */}
-      <div className="mb-4">
+      <div className="mb-4 pt-4">
         <input
           type="text"
           placeholder="Search by title..."
@@ -234,91 +234,90 @@ export default function Notices() {
       </div>
 
       {error ? (
-        <div className="flex flex-col items-center justify-center h-40 text-red-500">
-          <Typography variant="body1">{error}</Typography>
-        </div>
-      ) : filteredNotifications.length > 0 ? (
-        filteredNotifications.map(({ notification, index }) => {
-          const panelId = `panel${index}`;
-          const isRead = readStatus[index];
+  <div className="flex flex-col items-center justify-center h-40 text-red-500 ">
+    <Typography variant="body1">{error}</Typography>
+  </div>
+) : filteredNotifications.length > 0 ? (
+  // Wrap the notifications in a container div with proper styling
+  <div className="overflow-y-auto p-4">
+    {filteredNotifications.map(({ notification, index }) => {
+      const panelId = `panel${index}`;
+      const isRead = readStatus[index];
 
-          return (
-            <StyledAccordion
-              key={panelId}
-              expanded={expanded === panelId}
-              onChange={handleChange(index)}
-              sx={{ opacity: isRead ? 0.8 : 1 }}
-            >
-              <AccordionSummary
-                expandIcon={<ExpandMoreIcon sx={{ color: "#f5f5f5" }} />}
-                aria-controls={`${panelId}-content`}
-                id={`${panelId}-header`}
-                sx={{
-                  minHeight: { xs: "48px", sm: "64px" },
-                  padding: "0 16px",
-                }}
-              >
-                <div className="flex items-center justify-between w-full">
-                  <div className="flex items-center">
-                    <NotificationDot
-                      sx={{
-                        color: notification.category
-                          ? getTypeColor(notification.category)
-                          : "#03a9f4",
-                      }}
-                    />
-                    <div>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ fontWeight: 600 }}
-                        className="text-sm sm:text-base"
-                      >
-                        {notification.title}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ color: "#aaa" }}
-                        className="text-xs sm:text-sm"
-                      >
-                        {notification.timestamp}
-                      </Typography>
-                    </div>
-                  </div>
-                </div>
-              </AccordionSummary>
-              <AccordionDetails sx={{ padding: "8px 16px 16px 16px" }}>
-                <Typography
-                  variant="body2"
+      return (
+        <StyledAccordion
+          key={panelId}
+          expanded={expanded === panelId}
+          onChange={handleChange(index)}
+          sx={{ opacity: isRead ? 0.8 : 1 }}
+        >
+          <AccordionSummary
+            expandIcon={<ExpandMoreIcon sx={{ color: "#f5f5f5" }} />}
+            aria-controls={`${panelId}-content`}
+            id={`${panelId}-header`}
+            sx={{
+              minHeight: { xs: "48px", sm: "64px" },
+              padding: "0 16px",
+            }}
+          >
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center">
+                <NotificationDot
                   sx={{
-                    marginBottom: 2,
-                    lineHeight: 1.6,
-                    wordWrap: "break-word",
-                    overflowWrap: "break-word",
+                    color: notification.category
+                      ? getTypeColor(notification.category)
+                      : "#03a9f4",
                   }}
-                  className="text-xs sm:text-sm whitespace-pre-wrap break-words hyphens-auto"
-                >
-                  {notification.content}
-                </Typography>
-                <Link
-                  href={notification.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  underline="hover"
-                  className="text-sm sm:text-base"
-                >
-                  View Details
-                </Link>
-              </AccordionDetails>
-            </StyledAccordion>
-          );
-        })
-      ) : (
-        <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-          <Typography variant="body1" className="text-sm sm:text-base">
-            No notifications
-          </Typography>
-        </div>
-      )}
+                />
+<div className="w-full h-full">
+  <div className="break-all">
+    {notification.title}
+  </div>
+  <Typography
+    variant="caption"
+    sx={{ color: "#aaa" }}
+    className="text-xs sm:text-sm"
+  >
+    {notification.timestamp}
+  </Typography>
+</div>
+              </div>
+            </div>
+          </AccordionSummary>
+          <AccordionDetails sx={{ padding: "8px 16px 16px 16px" }}>
+            <Typography
+              variant="body2"
+              sx={{
+                marginBottom: 2,
+                lineHeight: 1.6,
+                wordWrap: "break-word",
+                overflowWrap: "break-word",
+              }}
+              className="text-xs sm:text-sm whitespace-pre-wrap break-words hyphens-auto"
+            >
+              {notification.content}
+            </Typography>
+            <Link
+              href={notification.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              underline="hover"
+              className="text-sm sm:text-base"
+            >
+              View Details
+            </Link>
+          </AccordionDetails>
+        </StyledAccordion>
+      );
+    })}
+  </div>
+) : (
+  <div className="flex flex-col items-center justify-center h-40 text-gray-400">
+    <Typography variant="body1" className="text-sm sm:text-base">
+      No notifications
+    </Typography>
+  </div>
+)}
     </div>
   );
 }
