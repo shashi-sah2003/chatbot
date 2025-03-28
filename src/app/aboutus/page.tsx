@@ -27,15 +27,15 @@ const TeamCard: React.FC<TeamCardProps> = ({
 }) => {
   return (
     <BackgroundGradient className="rounded-xl w-full p-4 sm:p-10 bg-gray-400 dark:bg-zinc-900 shadow-lg">
-  <div className="flex flex-col items-center">
-    <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden mb-2">
-      <Image
-        src={image}
-        alt={`Profile picture of ${name}`}
-        fill
-        className="object-cover"
-      />
-    </div>
+      <div className="flex flex-col items-center">
+        <div className="relative w-32 h-32 md:w-40 md:h-40 rounded-full overflow-hidden mb-2">
+          <Image
+            src={image}
+            alt={`Profile picture of ${name}`}
+            fill
+            className="object-cover"
+          />
+        </div>
         <h3 className="text-lg sm:text-xl text-black dark:text-neutral-200 font-bold mt-4 mb-2">
           {name}
         </h3>
@@ -104,10 +104,10 @@ const teamMembers = [
 
 const AboutUs = () => {
   return (
-    <section className="py-12">
+    <section className="min-h-screen flex items-center">
       <div className="container mx-auto px-4">
         {/* Mobile Swiper View */}
-        <div className="md:hidden">
+        <div className="md:hidden mb-14">
           <div className="flex items-center justify-center space-x-2 mb-4 text-white dark:text-neutral-200">
             <span>Swipe right-left to see more</span>
             <FaArrowRight aria-hidden="true" />
@@ -122,7 +122,7 @@ const AboutUs = () => {
         </div>
 
         {/* Desktop Grid View */}
-        <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+        <div className="hidden md:grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 mb-11">
           {teamMembers.map((member, index) => (
             <TeamCard key={index} {...member} />
           ))}

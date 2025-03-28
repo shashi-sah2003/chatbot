@@ -12,10 +12,36 @@ import {
 } from "@radix-ui/react-hover-card";
 
 const menuOptions = [
-  { id: 0, label: "DTU Assistant", description: "General DTU inquiries", path: "/" },
-  { id: 1, label: "Result-26", description: "ask for result of batch 2k26", path: "/result_26" },
-  { id: 2, label: "Result-27", description: "ask for result of batch 2k27", path: "/result_27" },
-  { id: 3, label: "DTU Notice", description: "ask for Notice", path: "/notice" },
+  {
+    id: 0,
+    label: "DTU Assistant",
+    description: "General DTU inquiries",
+    path: "/",
+  },
+  {
+    id: 1,
+    label: "Result-26",
+    description: "ask for result of batch 2k26",
+    path: "/result_26",
+  },
+  {
+    id: 2,
+    label: "Result-27",
+    description: "ask for result of batch 2k27",
+    path: "/result_27",
+  },
+  {
+    id: 3,
+    label: "DTU Notice",
+    description: "ask for Notice",
+    path: "/notice",
+  },
+  {
+    id: 4,
+    label: "Pyq's",
+    description: "get previous year papers",
+    path: "/pyq_solutions",
+  },
 ];
 
 const Header = () => {
@@ -43,7 +69,9 @@ const Header = () => {
     } else {
       const currentItem = menuOptions.find((item) => item.path === pathname);
       setCurrentButton(currentItem?.label || "DTU ChatBot");
-      setFilteredMenuItems(menuOptions.filter((item) => item.path !== pathname));
+      setFilteredMenuItems(
+        menuOptions.filter((item) => item.path !== pathname)
+      );
       if (currentItem) {
         toast.success(`Switched to ${currentItem.label}`, {
           position: "top-center",
@@ -71,7 +99,9 @@ const Header = () => {
             >
               <span
                 className={`transition-all duration-300 overflow-hidden ${
-                  currentButton === "" ? "max-w-0 opacity-0" : "max-w-xs opacity-100"
+                  currentButton === ""
+                    ? "max-w-0 opacity-0"
+                    : "max-w-xs opacity-100"
                 }`}
               >
                 {currentButton || "Menu"}
@@ -84,9 +114,14 @@ const Header = () => {
             >
               {filteredMenuItems.map((item) => (
                 <li key={item.id}>
-                  <a onClick={() => handleMenuItemClick(item.path)} className="cursor-pointer">
+                  <a
+                    onClick={() => handleMenuItemClick(item.path)}
+                    className="cursor-pointer"
+                  >
                     <div className="text-sm">
-                      <p className="font-semibold tracking-wide text-white">{item.label}</p>
+                      <p className="font-semibold tracking-wide text-white">
+                        {item.label}
+                      </p>
                       {item.description && (
                         <p className="text-[13px] font-semibold text-gray-400">
                           {item.description}
@@ -100,7 +135,10 @@ const Header = () => {
           </div>
           {/* Mobile: Always-visible About Us link */}
           <div className="md:hidden">
-            <Link href="/aboutus" className="text-white hover:text-gray-300 font-semibold">
+            <Link
+              href="/aboutus"
+              className="text-gray-300 hover:text-white transition-colors font-semibold"
+            >
               About Us
             </Link>
           </div>
@@ -123,13 +161,15 @@ const Header = () => {
                         <Link
                           href={item.path}
                           onClick={() => handleMenuItemClick(item.path)}
-                          className="text-gray-300 hover:text-white  transition-colors"
+                          className="text-gray-300 hover:text-white transition-colors"
                         >
                           {item.label}
                         </Link>
                       </HoverCardTrigger>
                       <HoverCardContent className="bg-[#2F2F2F] text-white p-2 rounded shadow-lg">
-                        <p className="text-sm font-semibold">{item.description}</p>
+                        <p className="text-sm font-semibold">
+                          {item.description}
+                        </p>
                       </HoverCardContent>
                     </HoverCard>
                   )}
@@ -137,7 +177,10 @@ const Header = () => {
               );
             })}
             {/* About Us Link in inline navigation */}
-            <Link href="/aboutus" className="text-white hover:text-gray-300 font-semibold">
+            <Link
+              href="/aboutus"
+              className="text-gray-300 hover:text-white transition-colors font-semibold hover:scale-100"
+            >
               About Us
             </Link>
           </nav>
@@ -147,7 +190,9 @@ const Header = () => {
           {conversationOpen && (
             <button
               type="button"
-              onClick={() => window.dispatchEvent(new CustomEvent("new-session"))}
+              onClick={() =>
+                window.dispatchEvent(new CustomEvent("new-session"))
+              }
               className="text-white hover:text-gray-300 font-semibold py-1 px-3 rounded-md transition-colors duration-200"
             >
               New Session

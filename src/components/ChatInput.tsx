@@ -75,9 +75,10 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
         <div className="bg-zinc-800 rounded-2xl relative overflow-y-hidden">
           <Textarea
             ref={textareaRef}
-            placeholder="Ask about DTU..."
+            placeholder="Type your queries here..."
             disabled={isStreaming || !isStreamingComplete}
-            className="w-full bg-transparent rounded-2xl text-white placeholder:text-zinc-400 resize-none border-zinc-600 outline-none focus:outline-none focus:ring-0 pb-12 focus:border-white border"
+            className="w-full bg-transparent rounded-2xl text-white placeholder:text-zinc-400 resize-none border-2 border-zinc-600 outline-none focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 pb-12 shadow-lg"
+            style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
             value={prompt}
             onChange={(e) => {
               setPrompt(e.target.value);
@@ -87,7 +88,8 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
             rows={2}
             autoFocus
           />
-          <div className="absolute bottom-1 right-3.5 flex items-center size-8">
+
+          <div className="absolute inset-y-0 right-3.5 flex items-center">
             <Button
               type="submit"
               disabled={!prompt || isStreaming || !isStreamingComplete}

@@ -33,7 +33,7 @@ const ChatBubble = ({
   showFeedbackIcons = false,
 }: ChatBubbleProps) => {
   const isUser = sender === "user";
-  const {isStreamingComplete } =useStreaming();
+  const { isStreamingComplete } = useStreaming();
   const { openFeedback } = useContext(FeedbackContext);
   const [feedback, setFeedback] = useState<"none" | "like" | "dislike">("none");
   const [feedbackDisabled, setFeedbackDisabled] = useState(false);
@@ -60,8 +60,6 @@ const ChatBubble = ({
     );
   };
 
-
-  
   const isFullHTML =
     typeof fullText === "string" &&
     (fullText.trim().startsWith("<!DOCTYPE") ||
@@ -78,7 +76,7 @@ const ChatBubble = ({
   if (isUser) {
     return (
       <div className="flex justify-end">
-        <div className="chat-bubble bg-[#2f2f2f] text-white text-sm p-2 rounded-xl max-w-[80%]">
+        <div className="chat-bubble bg-[#2f2f2f] text-white text-sm p-2 rounded-xl max-w-[80%] break-words">
           {message}
         </div>
       </div>
@@ -99,9 +97,9 @@ const ChatBubble = ({
             <Bot size={18} />
           </div>
           <div className="ml-2 flex-1">
-            <div className="chat-bubble bg-[#212121] w-full">
+            <div className="chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[80%] break-words">
               {!isFullHTML && displayText && (
-               <MarkdownRenderer content={displayText} speed={3}/>
+                <MarkdownRenderer content={displayText} speed={3}/>
               )}
               {isLoading && <AILoading />}
             </div>

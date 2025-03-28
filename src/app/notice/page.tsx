@@ -49,8 +49,9 @@ export default function Notices() {
   const [expanded, setExpanded] = useState<string | false>(false);
   const [readStatus, setReadStatus] = useState<Record<number, boolean>>({});
   const [filter, setFilter] = useState("All");
-  const [loading, setLoading] = useState(true); // Add a loading state
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   useEffect(() => {
     const initialStatus = notifications.reduce((acc, _, index) => {
@@ -62,10 +63,10 @@ export default function Notices() {
 
   useEffect(() => {
     const fetchNotifications = async () => {
-      setLoading(true); // Set loading to true before fetching
+      setLoading(true);
       try {
         const response = await axios.get(
-          `${baseUrl}/chat/information`
+          `https://api.res-umer.tech/v2/chat/information`
         );
         if (response.data.response && Array.isArray(response.data.response)) {
           setNotifications(response.data.response);
@@ -78,26 +79,25 @@ export default function Notices() {
         setNotifications([]);
         setError("Error fetching notifications. Please try again later.");
       } finally {
-        setLoading(false); // Set loading to false once fetching is done
+        setLoading(false);
       }
     };
 
     fetchNotifications();
   }, []);
 
-  const handleChange = (panelIndex: number) => (
-    event: React.SyntheticEvent,
-    isExpanded: boolean
-  ) => {
-    const panelId = `panel${panelIndex}`;
-    setExpanded(isExpanded ? panelId : false);
-    if (isExpanded && !readStatus[panelIndex]) {
-      setReadStatus((prev) => ({
-        ...prev,
-        [panelIndex]: true,
-      }));
-    }
-  };
+  const handleChange =
+    (panelIndex: number) =>
+    (event: React.SyntheticEvent, isExpanded: boolean) => {
+      const panelId = `panel${panelIndex}`;
+      setExpanded(isExpanded ? panelId : false);
+      if (isExpanded && !readStatus[panelIndex]) {
+        setReadStatus((prev) => ({
+          ...prev,
+          [panelIndex]: true,
+        }));
+      }
+    };
 
   const getTypeColor = (type: string) => {
     switch (type) {
@@ -128,24 +128,43 @@ export default function Notices() {
   const filteredNotifications = notifications
     .map((notification, index) => ({ notification, index }))
     .filter(
-      ({ notification }) => filter === "All" || notification.category === filter
+      ({ notification }) =>
+        (filter === "All" || notification.category === filter) &&
+        notification.title.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
   if (loading) {
-    return <Loader />; // Show the loader while loading
+    return <Loader />;
   }
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-screen-md mx-auto bg-[#212121] overflow-y-auto p-4 pb-20">
+    <div className="flex flex-col h-screen w-full mx-auto bg-[#212121] p-4 sm:p-6 pb-20 overflow-x-hidden overflow-y-auto">
+      {/* Search Input */}
+      <div className="mb-4">
+        <input
+          type="text"
+          placeholder="Search by title..."
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+          className="w-full p-2 rounded border border-gray-400 bg-slate-900 text-white text-sm sm:text-base"
+        />
+      </div>
+
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
         <Typography
           variant="h6"
           sx={{ color: "#f5f5f5", marginBottom: { xs: 1, sm: 0 } }}
+          className="text-sm sm:text-lg"
         >
           Notifications
         </Typography>
+
         <FormControl component="fieldset">
-          <RadioGroup row value={filter} onChange={(e) => setFilter(e.target.value)}>
+          <RadioGroup
+            row
+            value={filter}
+            onChange={(e) => setFilter(e.target.value)}
+          >
             <FormControlLabel
               value="All"
               control={
@@ -160,6 +179,7 @@ export default function Notices() {
               }
               label="All"
               sx={{ color: "#f5f5f5" }}
+              className="text-sm sm:text-base"
             />
             <FormControlLabel
               value="notices"
@@ -175,6 +195,7 @@ export default function Notices() {
               }
               label="notices"
               sx={{ color: "#f5f5f5" }}
+              className="text-sm sm:text-base"
             />
             <FormControlLabel
               value="news"
@@ -190,8 +211,9 @@ export default function Notices() {
               }
               label="news"
               sx={{ color: "#f5f5f5" }}
+              className="text-sm sm:text-base"
             />
-             <FormControlLabel
+            <FormControlLabel
               value="forthcoming_events"
               control={
                 <Radio
@@ -203,8 +225,9 @@ export default function Notices() {
                   }}
                 />
               }
-              label="forthcoming_events"
+              label="forthcoming events"
               sx={{ color: "#f5f5f5" }}
+              className="text-sm sm:text-base"
             />
           </RadioGroup>
         </FormControl>
@@ -230,7 +253,10 @@ export default function Notices() {
                 expandIcon={<ExpandMoreIcon sx={{ color: "#f5f5f5" }} />}
                 aria-controls={`${panelId}-content`}
                 id={`${panelId}-header`}
-                sx={{ minHeight: "64px", padding: "0 16px" }}
+                sx={{
+                  minHeight: { xs: "48px", sm: "64px" },
+                  padding: "0 16px",
+                }}
               >
                 <div className="flex items-center justify-between w-full">
                   <div className="flex items-center">
@@ -242,10 +268,18 @@ export default function Notices() {
                       }}
                     />
                     <div>
-                      <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ fontWeight: 600 }}
+                        className="text-sm sm:text-base"
+                      >
                         {notification.title}
                       </Typography>
-                      <Typography variant="caption" sx={{ color: "#aaa" }}>
+                      <Typography
+                        variant="caption"
+                        sx={{ color: "#aaa" }}
+                        className="text-xs sm:text-sm"
+                      >
                         {notification.timestamp}
                       </Typography>
                     </div>
@@ -253,7 +287,16 @@ export default function Notices() {
                 </div>
               </AccordionSummary>
               <AccordionDetails sx={{ padding: "8px 16px 16px 16px" }}>
-                <Typography variant="body2" sx={{ marginBottom: 2, lineHeight: 1.6 }}>
+                <Typography
+                  variant="body2"
+                  sx={{
+                    marginBottom: 2,
+                    lineHeight: 1.6,
+                    wordWrap: "break-word",
+                    overflowWrap: "break-word",
+                  }}
+                  className="text-xs sm:text-sm whitespace-pre-wrap break-words hyphens-auto"
+                >
                   {notification.content}
                 </Typography>
                 <Link
@@ -261,6 +304,7 @@ export default function Notices() {
                   target="_blank"
                   rel="noopener noreferrer"
                   underline="hover"
+                  className="text-sm sm:text-base"
                 >
                   View Details
                 </Link>
@@ -270,7 +314,9 @@ export default function Notices() {
         })
       ) : (
         <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-          <Typography variant="body1">No notifications</Typography>
+          <Typography variant="body1" className="text-sm sm:text-base">
+            No notifications
+          </Typography>
         </div>
       )}
     </div>
