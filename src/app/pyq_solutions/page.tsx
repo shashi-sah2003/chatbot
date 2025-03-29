@@ -9,26 +9,35 @@ import FeedbackDialog from "@/components/FeedbackDialog";
 import { StreamingContext } from "@/components/StreamingContext";
 import UploadQuestionPaper from "@/components/UploadQuestionPaper";
 
-// Define the chat message interface
-export interface ChatMessage {
+// Define a tuple type for each paper.
+// Adjust the types if you have more specific information.
+type Paper = [unknown, unknown, string, string, string, string, string, string];
+
+export type ChatMessage = {
   id: number;
   sender: "user" | "ai";
   message: React.ReactNode;
   fullText?: React.ReactNode;
   isLoading?: boolean;
   stream?: boolean;
+};
+
+// Interface for the API response
+interface PyqPapersResponse {
+  response: Paper[] | string;
 }
 
 const sampleMarkdown = `Unexpected error occurred. Please try again later.`;
 
 // Function to generate a markdown table from the CSV-like array response
-const generateMarkdownTable = (papersArray: any[]): string => {
+const generateMarkdownTable = (papersArray: Paper[]): string => {
   if (papersArray.length === 0) {
-    return "Currently i can't help you with this query😔.";
+    return "Currently I can't help you with this query😔.";
   }
-  const header = "Subject Code | Year | Sem | Month | Branch | Link |\n| --- | --- | --- | --- | --- | --- |\n";
+  const header =
+    "Subject Code | Year | Sem | Month | Branch | Link |\n| --- | --- | --- | --- | --- | --- |\n";
   const rows = papersArray
-    .map((paper: any[]) => {
+    .map((paper: Paper) => {
       // Omit the first (id) and last (filePath) columns
       const subjectCode = paper[2];
       const year = paper[3];
@@ -70,9 +79,12 @@ export default function ChatPage() {
 
     try {
       const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      const response = await axios.post(`${baseUrl}/pyq_papers`, { query: userQuery });
-      let papersArray: any[] | null = null;
-      
+      const response = await axios.post<PyqPapersResponse>(
+        `${baseUrl}/pyq_papers`,
+        { query: userQuery }
+      );
+      let papersArray: Paper[] | null = null;
+
       // Check if the response is an array
       if (Array.isArray(response.data.response)) {
         papersArray = response.data.response;
@@ -95,7 +107,13 @@ export default function ChatPage() {
         setChatHistory((prev) =>
           prev.map((msg) =>
             msg.id === aiMsgId
-              ? { ...msg, message: markdownTable, fullText: markdownTable, isLoading: false, stream: false }
+              ? {
+                  ...msg,
+                  message: markdownTable,
+                  fullText: markdownTable,
+                  isLoading: false,
+                  stream: false,
+                }
               : msg
           )
         );
@@ -108,7 +126,13 @@ export default function ChatPage() {
         setChatHistory((prev) =>
           prev.map((msg) =>
             msg.id === aiMsgId
-              ? { ...msg, fullText, isLoading: false, stream: false, message: fullText }
+              ? {
+                  ...msg,
+                  fullText,
+                  isLoading: false,
+                  stream: false,
+                  message: fullText,
+                }
               : msg
           )
         );
@@ -117,7 +141,13 @@ export default function ChatPage() {
       setChatHistory((prev) =>
         prev.map((msg) =>
           msg.id === aiMsgId
-            ? { ...msg, message: sampleMarkdown, fullText: sampleMarkdown, isLoading: false, stream: false }
+            ? {
+                ...msg,
+                message: sampleMarkdown,
+                fullText: sampleMarkdown,
+                isLoading: false,
+                stream: false,
+              }
             : msg
         )
       );
@@ -140,11 +170,15 @@ export default function ChatPage() {
 
   const conversationOpen = chatHistory.length > 0;
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent("conversation-changed", { detail: { conversationOpen } }));
+    window.dispatchEvent(
+      new CustomEvent("conversation-changed", { detail: { conversationOpen } })
+    );
   }, [conversationOpen]);
 
   return (
-    <StreamingContext.Provider value={{ isStreaming, setIsStreaming, isStreamingComplete, setIsStreamingComplete }}>
+    <StreamingContext.Provider
+      value={{ isStreaming, setIsStreaming, isStreamingComplete, setIsStreamingComplete }}
+    >
       <FeedbackProvider>
         <div className="flex flex-col h-screen w-full max-w-screen-md overflow-x-hidden mx-auto bg-[#212121]">
           {!conversationOpen && (

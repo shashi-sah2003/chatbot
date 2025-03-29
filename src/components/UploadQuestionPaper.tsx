@@ -1,18 +1,26 @@
 "use client";
-import { useState, FormEvent, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
+import { useForm, SubmitHandler } from "react-hook-form";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 
-interface UploadQuestionPaperProps {}
+interface FormData {
+  subject: string;
+  course: string;
+  courseCode: string;
+  month: string;
+  year: string;
+  examType: string;
+  pdfFile: FileList;
+  // Additional field appended before sending to backend
+  randomData?: string;
+}
 
-export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
+export default function UploadQuestionPaper() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
-
-  // State for subject search/filter
-  const [subjectQuery, setSubjectQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  
+
   // List of all subjects
   const subjects = [
     "Basic Econometrics",
@@ -98,15 +106,26 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
     "Wireless Mobile Computing"
   ];
 
+  // useForm hook with our typed form data.
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors }
+  } = useForm<FormData>();
+
+  // Watch the subject field for filtering suggestions
+  const subjectQuery = watch("subject", "");
+
   // Filter subjects based on subjectQuery (case insensitive)
   const filteredSubjects = subjects.filter((subject) =>
     subject.toLowerCase().includes(subjectQuery.toLowerCase())
   );
 
-  // Ref for handling outside clicks
+  // Ref for handling outside clicks for the subject suggestions
   const subjectWrapperRef = useRef<HTMLDivElement>(null);
-
-  // Close suggestion list if clicked outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -121,41 +140,29 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
       document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
-  // When isModalOpen becomes true, delay showing the modal content
+  // Modal animation effects
   useEffect(() => {
     if (isModalOpen) {
-      // Delay to allow transition classes to animate
       setTimeout(() => setShowModal(true), 10);
     } else {
       setShowModal(false);
-      // Reset subject field when modal closes (optional)
-      setSubjectQuery("");
+      reset();
       setShowSuggestions(false);
     }
-  }, [isModalOpen]);
+  }, [isModalOpen, reset]);
 
-  const handleFormSubmit = async (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const formData = new FormData(e.currentTarget);
-
-    // Create an object from the form data entries.
-    const data: Record<string, any> = {};
-    formData.forEach((value, key) => {
-      data[key] = value;
-    });
-
-    // Append a random string field. Replace this later as needed.
+  const onSubmit: SubmitHandler<FormData> = async (data) => {
+    // Append additional field before sending
     data.randomData = "randomString";
     console.log(data);
 
     try {
-      // Replace YOUR_BACKEND_ENDPOINT_HERE with your API endpoint.
+      // Replace YOUR_BACKEND_ENDPOINT_HERE with your actual API endpoint.
       const response = await axios.post("YOUR_BACKEND_ENDPOINT_HERE", data);
       console.log("Response from backend:", response.data);
     } catch (error) {
       console.error("Error sending data to backend:", error);
     } finally {
-      // Close modal after submission
       setIsModalOpen(false);
     }
   };
@@ -167,7 +174,7 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
           className="mt-2 px-4 py-2 bg-green-600 text-white rounded"
           onClick={() => setIsModalOpen(true)}
         >
-          click me to upload question paper
+          Click me to upload question paper
         </button>
       </div>
 
@@ -184,13 +191,13 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
               initial={{ y: -50, opacity: 0 }}
               animate={{ y: 0, opacity: 1 }}
               exit={{ y: -50, opacity: 0 }}
-              onClick={(e) => e.stopPropagation()} // Prevent closing modal on inner click
+              onClick={(e) => e.stopPropagation()}
               className="bg-[#2f2f2f] rounded-lg p-6 max-w-md w-full relative"
             >
               <h2 className="text-xl font-semibold mb-4 text-white">
                 Upload Question Paper
               </h2>
-              <form onSubmit={handleFormSubmit}>
+              <form onSubmit={handleSubmit(onSubmit)}>
                 {/* Subject Field with Filterable Dropdown */}
                 <div className="mb-2 relative" ref={subjectWrapperRef}>
                   <label className="block text-sm font-medium text-white">
@@ -198,17 +205,10 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
                   </label>
                   <input
                     type="text"
-                    name="subject"
-                    value={subjectQuery}
-                    onChange={(e) => {
-                      setSubjectQuery(e.target.value);
-                      setShowSuggestions(true);
-                    }}
-                    onFocus={() => setShowSuggestions(true)}
-                    className="w-full border rounded p-1 text-white bg-[#2f2f2f] border-gray-600"
                     placeholder="Type to search..."
-                    required
-                    autoComplete="off"
+                    className="w-full border rounded p-1 text-white bg-[#2f2f2f] border-gray-600"
+                    {...register("subject", { required: true })}
+                    onFocus={() => setShowSuggestions(true)}
                   />
                   {showSuggestions && subjectQuery && (
                     <div className="absolute z-50 mt-1 w-full bg-[#2f2f2f] border border-gray-600 rounded max-h-60 overflow-auto">
@@ -217,7 +217,7 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
                           <div
                             key={idx}
                             onClick={() => {
-                              setSubjectQuery(subject);
+                              setValue("subject", subject);
                               setShowSuggestions(false);
                             }}
                             className="cursor-pointer px-2 py-1 hover:bg-gray-700 text-white"
@@ -232,29 +232,45 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
                       )}
                     </div>
                   )}
+                  {errors.subject && (
+                    <span className="text-red-500 text-xs">
+                      Subject is required.
+                    </span>
+                  )}
                 </div>
+
                 <div className="mb-2">
                   <label className="block text-sm font-medium text-white">
                     Course
                   </label>
                   <input
                     type="text"
-                    name="course"
                     className="w-full border rounded p-1 text-white bg-[#2f2f2f] border-gray-600"
-                    required
+                    {...register("course", { required: true })}
                   />
+                  {errors.course && (
+                    <span className="text-red-500 text-xs">
+                      Course is required.
+                    </span>
+                  )}
                 </div>
+
                 <div className="mb-2">
                   <label className="block text-sm font-medium text-white">
                     Course Code
                   </label>
                   <input
                     type="text"
-                    name="courseCode"
                     className="w-full border rounded p-1 text-white bg-[#2f2f2f] border-gray-600"
-                    required
+                    {...register("courseCode", { required: true })}
                   />
+                  {errors.courseCode && (
+                    <span className="text-red-500 text-xs">
+                      Course Code is required.
+                    </span>
+                  )}
                 </div>
+
                 <div className="mb-2 flex space-x-2">
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-white">
@@ -262,10 +278,14 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
                     </label>
                     <input
                       type="text"
-                      name="month"
                       className="w-full border rounded p-1 text-white bg-[#2f2f2f] border-gray-600"
-                      required
+                      {...register("month", { required: true })}
                     />
+                    {errors.month && (
+                      <span className="text-red-500 text-xs">
+                        Month is required.
+                      </span>
+                    )}
                   </div>
                   <div className="flex-1">
                     <label className="block text-sm font-medium text-white">
@@ -273,12 +293,17 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
                     </label>
                     <input
                       type="text"
-                      name="year"
                       className="w-full border rounded p-1 text-white bg-[#2f2f2f] border-gray-600"
-                      required
+                      {...register("year", { required: true })}
                     />
+                    {errors.year && (
+                      <span className="text-red-500 text-xs">
+                        Year is required.
+                      </span>
+                    )}
                   </div>
                 </div>
+
                 <div className="mb-2">
                   <label className="block text-sm font-medium text-white">
                     Exam Type
@@ -286,23 +311,33 @@ export default function UploadQuestionPaper({}: UploadQuestionPaperProps) {
                   <input
                     type="text"
                     placeholder="Mid/End sem"
-                    name="examType"
                     className="w-full border rounded p-1 text-white bg-[#2f2f2f] border-gray-600"
-                    required
+                    {...register("examType", { required: true })}
                   />
+                  {errors.examType && (
+                    <span className="text-red-500 text-xs">
+                      Exam Type is required.
+                    </span>
+                  )}
                 </div>
+
                 <div className="mb-4">
                   <label className="block text-sm font-medium text-white">
                     PDF Upload
                   </label>
                   <input
                     type="file"
-                    name="pdfFile"
                     accept="application/pdf"
                     className="w-full text-white bg-[#2f2f2f] border border-gray-600 rounded p-1"
-                    required
+                    {...register("pdfFile", { required: true })}
                   />
+                  {errors.pdfFile && (
+                    <span className="text-red-500 text-xs">
+                      PDF file is required.
+                    </span>
+                  )}
                 </div>
+
                 <div className="flex justify-end space-x-2">
                   <button
                     type="button"
