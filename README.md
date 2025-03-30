@@ -6,8 +6,8 @@ A Next.js-powered conversational AI interface designed specifically for DTU (Del
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/yourusername/dtu-chatbot.git
-cd dtu-chatbot
+git clone https://github.com/shashi-sah2003/chatbot.git
+cd chatbot
 ```
 
 2. Install dependencies:
