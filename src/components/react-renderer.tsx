@@ -65,7 +65,7 @@ const AnimatedMarkdownText: React.FC<AnimatedMarkdownTextProps> = ({
           <a {...props} target="_blank" rel="noopener noreferrer" />
         ),
         table: ({ node, ...props }) => (
-          <div className="overflow-x-hidden">
+          <div className="overflow-x-auto">
             <table {...props} className="min-w-full" />
           </div>
         ),
@@ -84,7 +84,7 @@ interface MarkdownRendererProps {
 
 const MarkdownRenderer: React.FC<MarkdownRendererProps> = ({ content, speed }) => {
   return (
-    <div className="max-w-full p-0 m-0">
+    <div className="">
       <AnimatedMarkdownText markdownString={content} speed={speed} />
     </div>
   );

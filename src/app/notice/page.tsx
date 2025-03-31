@@ -1,38 +1,99 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo, useCallback } from "react";
 import axios from "axios";
 import Loader from "@/components/Loader";
-import Accordion from "@mui/material/Accordion";
-import AccordionSummary from "@mui/material/AccordionSummary";
-import AccordionDetails from "@mui/material/AccordionDetails";
-import Typography from "@mui/material/Typography";
+import {
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Typography,
+  Link,
+  Radio,
+  RadioGroup,
+  FormControlLabel,
+  FormControl,
+  Paper,
+  InputAdornment,
+  TextField,
+  Tooltip
+} from "@mui/material";
+import { styled, alpha } from "@mui/material/styles";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
-import Link from "@mui/material/Link";
-import { styled } from "@mui/material/styles";
+import SearchIcon from "@mui/icons-material/Search";
+import OpenInNewIcon from "@mui/icons-material/OpenInNew";
+import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CircleIcon from "@mui/icons-material/Circle";
-import Radio from "@mui/material/Radio";
-import RadioGroup from "@mui/material/RadioGroup";
-import FormControlLabel from "@mui/material/FormControlLabel";
-import FormControl from "@mui/material/FormControl";
 
+// Enhanced styled components
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
-  backgroundColor: "#2d2d2d",
+  backgroundColor: alpha('#2d2d2d', 0.8),
   color: "#f5f5f5",
-  marginBottom: "8px",
-  borderRadius: "8px",
+  marginBottom: "12px",
+  borderRadius: "10px !important",
   border: "1px solid #424242",
-  transition: "all 0.3s ease",
+  transition: "all 0.2s ease",
+  overflow: "hidden",
+  "&:before": {
+    display: "none", // Remove the default MUI divider
+  },
   "&:hover": {
     backgroundColor: "#333333",
     transform: "translateY(-2px)",
-    boxShadow: "0 4px 8px rgba(0, 0, 0, 0.2)",
+    boxShadow: "0 6px 12px rgba(0, 0, 0, 0.3)",
   },
+  "&.Mui-expanded": {
+    boxShadow: "0 8px 16px rgba(0, 0, 0, 0.4)",
+  }
 }));
 
 const NotificationDot = styled(CircleIcon)({
   fontSize: 12,
-  color: "#03a9f4",
   marginRight: 8,
+});
+
+const SearchField = styled(TextField)({
+  "& .MuiOutlinedInput-root": {
+    borderRadius: "10px",
+    backgroundColor: alpha("#1a1a1a", 0.7),
+    transition: "all 0.3s ease",
+    "& fieldset": {
+      borderColor: "#424242",
+    },
+    "&:hover fieldset": {
+      borderColor: "#666",
+    },
+    "&.Mui-focused fieldset": {
+      borderColor: "#03a9f4",
+    },
+  },
+  "& .MuiInputBase-input": {
+    color: "#f5f5f5",
+    padding: "12px 14px",
+  },
+  "& .MuiInputAdornment-root": {
+    color: "#999",
+  },
+});
+
+const FilterRadioGroup = styled(RadioGroup)({
+  flexWrap: "wrap",
+  "& .MuiFormControlLabel-root": {
+    marginRight: 4,
+  },
+  "& .MuiFormControlLabel-label": {
+    fontSize: "0.85rem",
+  },
+});
+
+const EmptyStateContainer = styled(Paper)({
+  display: "flex",
+  flexDirection: "column",
+  alignItems: "center",
+  justifyContent: "center",
+  height: "200px",
+  backgroundColor: alpha("#1a1a1a", 0.5),
+  borderRadius: "10px",
+  border: "1px dashed #424242",
 });
 
 interface Notification {
@@ -43,63 +104,65 @@ interface Notification {
   url: string;
 }
 
+// A simple debounce hook to delay search input updates
+function useDebounce<T>(value: T, delay: number): T {
+  const [debouncedValue, setDebouncedValue] = useState<T>(value);
+  
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedValue(value);
+    }, delay);
+    
+    return () => clearTimeout(handler);
+  }, [value, delay]);
+  
+  return debouncedValue;
+}
+
 export default function Notices() {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [error, setError] = useState("");
   const [expanded, setExpanded] = useState<string | false>(false);
-  const [readStatus, setReadStatus] = useState<Record<number, boolean>>({});
   const [filter, setFilter] = useState("All");
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-
-  useEffect(() => {
-    const initialStatus = notifications.reduce((acc, _, index) => {
-      acc[index] = false;
-      return acc;
-    }, {} as Record<number, boolean>);
-    setReadStatus(initialStatus);
-  }, [notifications]);
+  
+  // Debounced search term to reduce filtering frequency
+  const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
   useEffect(() => {
     const fetchNotifications = async () => {
       setLoading(true);
       try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      const response = await axios.get(`${baseUrl}/chat/information`
-        );
+        const response = await axios.get(`${baseUrl}/chat/information`);
         if (response.data.response && Array.isArray(response.data.response)) {
           setNotifications(response.data.response);
           setError("");
         } else {
           setNotifications([]);
-          setError("Error fetching notifications: invalid response data.");
+          setError("Invalid data format received from server");
         }
       } catch (err) {
         setNotifications([]);
-        setError("Error fetching notifications. Please try again later.");
+        setError("Failed to load notifications. Please try again.");
       } finally {
         setLoading(false);
       }
     };
 
     fetchNotifications();
-  }, []);
+  }, [baseUrl]);
 
-  const handleChange =
-    (panelIndex: number) =>
-    (event: React.SyntheticEvent, isExpanded: boolean) => {
+  const handleChange = useCallback(
+    (panelIndex: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
       const panelId = `panel${panelIndex}`;
       setExpanded(isExpanded ? panelId : false);
-      if (isExpanded && !readStatus[panelIndex]) {
-        setReadStatus((prev) => ({
-          ...prev,
-          [panelIndex]: true,
-        }));
-      }
-    };
+    },
+    []
+  );
 
-  const getTypeColor = (type: string) => {
+  const getCategoryColor = useCallback((type: string) => {
     switch (type) {
       case "notices":
         return "#4dabf5";
@@ -110,57 +173,63 @@ export default function Notices() {
       default:
         return "#4dabf5";
     }
-  };
+  }, []);
 
-  const getRadioColor = (value: string) => {
-    switch (value) {
+  const getCategoryLabel = useCallback((type: string) => {
+    switch (type) {
       case "notices":
-        return "#4dabf5";
+        return "Notice";
       case "news":
-        return "#66bb6a";
+        return "News";
       case "forthcoming_events":
-        return "#ffa260";
+        return "Event";
       default:
-        return "#3a3a3a";
+        return "Other";
     }
-  };
+  }, []);
 
-  const filteredNotifications = notifications
-    .map((notification, index) => ({ notification, index }))
-    .filter(
-      ({ notification }) =>
+  // Memoize filtering to only recalculate when notifications, filter, or debouncedSearchTerm change
+  const filteredNotifications = useMemo(() => {
+    return notifications
+      .map((notification, index) => ({ notification, index }))
+      .filter(({ notification }) =>
         (filter === "All" || notification.category === filter) &&
-        notification.title.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+        notification.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+      );
+  }, [notifications, filter, debouncedSearchTerm]);
 
   if (loading) {
     return <Loader />;
   }
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-screen-md  pb-16 mx-auto bg-[#212121]">
-      {/* Search Input */}
-      <div className="mb-4 pt-4">
-        <input
-          type="text"
-          placeholder="Search by title..."
+    <div className="flex flex-col h-screen w-full max-w-screen-md pb-16 mx-auto bg-[#212121] px-4">
+      <div className="bg-[#212121] pt-4 pb-2">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-2xl sm:text-4xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent text-center mb-2">
+            Notifications
+          </h2>
+        </div>
+
+        <SearchField
+          fullWidth
+          placeholder="Search notifications..."
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
-          className="w-full p-2 rounded border border-gray-400 bg-slate-900 text-white text-sm sm:text-base"
+          variant="outlined"
+          size="small"
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <SearchIcon />
+              </InputAdornment>
+            ),
+          }}
+          className="mb-3"
         />
-      </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4">
-        <Typography
-          variant="h6"
-          sx={{ color: "#f5f5f5", marginBottom: { xs: 1, sm: 0 } }}
-          className="text-sm sm:text-lg"
-        >
-          Notifications
-        </Typography>
-
-        <FormControl component="fieldset">
-          <RadioGroup
+        <FormControl component="fieldset" fullWidth className="mb-2">
+          <FilterRadioGroup
             row
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
@@ -169,155 +238,205 @@ export default function Notices() {
               value="All"
               control={
                 <Radio
+                  size="small"
                   sx={{
-                    color: getRadioColor("All"),
+                    color: "#999",
                     "&.Mui-checked": {
-                      color: getRadioColor("All"),
+                      color: "#03a9f4",
                     },
                   }}
                 />
               }
               label="All"
               sx={{ color: "#f5f5f5" }}
-              className="text-sm sm:text-base"
             />
             <FormControlLabel
               value="notices"
               control={
                 <Radio
+                  size="small"
                   sx={{
-                    color: getRadioColor("notices"),
+                    color: "#999",
                     "&.Mui-checked": {
-                      color: getRadioColor("notices"),
+                      color: "#4dabf5",
                     },
                   }}
                 />
               }
-              label="notices"
+              label="Notices"
               sx={{ color: "#f5f5f5" }}
-              className="text-sm sm:text-base"
             />
             <FormControlLabel
               value="news"
               control={
                 <Radio
+                  size="small"
                   sx={{
-                    color: getRadioColor("news"),
+                    color: "#999",
                     "&.Mui-checked": {
-                      color: getRadioColor("news"),
+                      color: "#66bb6a",
                     },
                   }}
                 />
               }
-              label="news"
+              label="News"
               sx={{ color: "#f5f5f5" }}
-              className="text-sm sm:text-base"
             />
             <FormControlLabel
               value="forthcoming_events"
               control={
                 <Radio
+                  size="small"
                   sx={{
-                    color: getRadioColor("forthcoming_events"),
+                    color: "#999",
                     "&.Mui-checked": {
-                      color: getRadioColor("forthcoming_events"),
+                      color: "#ffa260",
                     },
                   }}
                 />
               }
-              label="forthcoming events"
+              label="Events"
               sx={{ color: "#f5f5f5" }}
-              className="text-sm sm:text-base"
             />
-          </RadioGroup>
+          </FilterRadioGroup>
         </FormControl>
       </div>
 
       {error ? (
-  <div className="flex flex-col items-center justify-center h-40 text-red-500 ">
-    <Typography variant="body1">{error}</Typography>
-  </div>
-) : filteredNotifications.length > 0 ? (
-  // Wrap the notifications in a container div with proper styling
-  <div className="overflow-y-auto p-4">
-    {filteredNotifications.map(({ notification, index }) => {
-      const panelId = `panel${index}`;
-      const isRead = readStatus[index];
+        <EmptyStateContainer elevation={0}>
+          <ErrorOutlineIcon sx={{ color: "#f44336", fontSize: 40, mb: 2 }} />
+          <Typography variant="body1" sx={{ color: "#f44336" }}>
+            {error}
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#999", mt: 1, textAlign: "center", px: 3 }}>
+            There was a problem fetching your notifications.
+            <br />Please try again later.
+          </Typography>
+        </EmptyStateContainer>
+      ) : filteredNotifications.length > 0 ? (
+        <div className="overflow-y-auto pb-10" style={{ flex: 1 }}>
+          {filteredNotifications.map(({ notification, index }) => {
+            const panelId = `panel${index}`;
+            const categoryColor = getCategoryColor(notification.category);
+            const categoryLabel = getCategoryLabel(notification.category);
 
-      return (
-        <StyledAccordion
-          key={panelId}
-          expanded={expanded === panelId}
-          onChange={handleChange(index)}
-          sx={{ opacity: isRead ? 0.8 : 1 }}
-        >
-          <AccordionSummary
-            expandIcon={<ExpandMoreIcon sx={{ color: "#f5f5f5" }} />}
-            aria-controls={`${panelId}-content`}
-            id={`${panelId}-header`}
-            sx={{
-              minHeight: { xs: "48px", sm: "64px" },
-              padding: "0 16px",
-            }}
-          >
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center">
-                <NotificationDot
+            return (
+              <StyledAccordion
+                key={panelId}
+                expanded={expanded === panelId}
+                onChange={handleChange(index)}
+                sx={{ 
+                  borderLeft: `4px solid ${categoryColor}`
+                }}
+              >
+                <AccordionSummary
+                  expandIcon={
+                    <ExpandMoreIcon 
+                      sx={{ 
+                        color: "#f5f5f5",
+                        transition: "transform 0.3s",
+                        transform: expanded === panelId ? "rotate(180deg)" : "rotate(0deg)"
+                      }} 
+                    />
+                  }
+                  aria-controls={`${panelId}-content`}
+                  id={`${panelId}-header`}
                   sx={{
-                    color: notification.category
-                      ? getTypeColor(notification.category)
-                      : "#03a9f4",
+                    minHeight: { xs: "54px", sm: "64px" },
+                    padding: "0 16px",
                   }}
-                />
-<div className="w-full h-full">
-  <div className="break-all">
-    {notification.title}
-  </div>
-  <Typography
-    variant="caption"
-    sx={{ color: "#aaa" }}
-    className="text-xs sm:text-sm"
-  >
-    {notification.timestamp}
-  </Typography>
-</div>
-              </div>
-            </div>
-          </AccordionSummary>
-          <AccordionDetails sx={{ padding: "8px 16px 16px 16px" }}>
-            <Typography
-              variant="body2"
-              sx={{
-                marginBottom: 2,
-                lineHeight: 1.6,
-                wordWrap: "break-word",
-                overflowWrap: "break-word",
-              }}
-              className="text-xs sm:text-sm whitespace-pre-wrap break-words hyphens-auto"
-            >
-              {notification.content}
-            </Typography>
-            <Link
-              href={notification.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              underline="hover"
-              className="text-sm sm:text-base"
-            >
-              View Details
-            </Link>
-          </AccordionDetails>
-        </StyledAccordion>
-      );
-    })}
-  </div>
-) : (
-  <div className="flex flex-col items-center justify-center h-40 text-gray-400">
-    <Typography variant="body1" className="text-sm sm:text-base">
-      No notifications
-    </Typography>
-  </div>
-)}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex flex-col w-full pr-4">
+                      <div className="flex items-center mb-1">
+                        <NotificationDot sx={{ color: categoryColor }} />
+                        <Typography
+                          variant="caption"
+                          sx={{ 
+                            color: categoryColor,
+                            fontWeight: 600,
+                            fontSize: "0.7rem",
+                          }}
+                        >
+                          {categoryLabel}
+                        </Typography>
+                      </div>
+                      <Typography
+                        variant="subtitle1"
+                        sx={{ 
+                          color: "#f5f5f5",
+                          fontWeight: 500,
+                          fontSize: { xs: "0.875rem", sm: "0.95rem" },
+                          lineHeight: 1.4,
+                        }}
+                        className="break-words"
+                      >
+                        {notification.title}
+                      </Typography>
+                      <Typography
+                        variant="caption"
+                        sx={{ 
+                          color: "#bbb",
+                          fontSize: { xs: "0.7rem", sm: "0.75rem" }
+                        }}
+                      >
+                        {notification.timestamp}
+                      </Typography>
+                    </div>
+                  </div>
+                </AccordionSummary>
+                <AccordionDetails sx={{ 
+                  padding: "8px 16px 16px 16px",
+                  backgroundColor: alpha("#1a1a1a", 0.3),
+                }}>
+                  <Typography
+                    variant="body2"
+                    sx={{
+                      marginBottom: 2,
+                      lineHeight: 1.6,
+                      color: "#e0e0e0",
+                      fontSize: { xs: "0.8rem", sm: "0.85rem" }
+                    }}
+                    className="whitespace-pre-wrap break-words"
+                  >
+                    {notification.content}
+                  </Typography>
+                  <Link
+                    href={notification.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    underline="hover"
+                    sx={{
+                      display: "inline-flex",
+                      alignItems: "center",
+                      color: categoryColor,
+                      fontSize: { xs: "0.8rem", sm: "0.85rem" },
+                      fontWeight: 500,
+                      transition: "opacity 0.2s",
+                      "&:hover": {
+                        opacity: 0.8
+                      }
+                    }}
+                  >
+                    View Details
+                    <OpenInNewIcon sx={{ fontSize: 16, ml: 0.5 }} />
+                  </Link>
+                </AccordionDetails>
+              </StyledAccordion>
+            );
+          })}
+        </div>
+      ) : (
+        <EmptyStateContainer elevation={0}>
+          <ErrorOutlineIcon sx={{ color: "#666", fontSize: 40, mb: 2 }} />
+          <Typography variant="body1" sx={{ color: "#f5f5f5" }}>
+            No notifications found
+          </Typography>
+          <Typography variant="body2" sx={{ color: "#999", mt: 1 }}>
+            {searchTerm ? "Try changing your search or filters" : "You're all caught up!"}
+          </Typography>
+        </EmptyStateContainer>
+      )}
     </div>
   );
 }
