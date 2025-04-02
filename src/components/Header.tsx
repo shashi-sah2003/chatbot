@@ -76,6 +76,15 @@ const Header = () => {
     if (pathname === "/aboutus") {
       setCurrentButton("About Us");
       setFilteredMenuItems(menuOptions.filter((item) => item.path !== "/aboutus"));
+      toast.success(`Switched to About Us`, {
+        position: "top-center",
+        style: { 
+          background: "linear-gradient(to right, #2F2F2F, #3a3a3a)", 
+          color: "#fff",
+          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
+          borderLeft: "4px solid #4f46e5"
+        },
+      });
     } else if (pathname === "/result_26" || pathname === "/result_27") {
       const label = pathname === "/result_26" ? "Result-26" : "Result-27";
       setCurrentButton(label);
@@ -118,8 +127,6 @@ const Header = () => {
   const toggleDropdown = (): void => {
     setDropdownOpen((prev) => !prev);
   };
-
-  const isAboutUsActive = pathname === "/aboutus";
 
   return (
     <>
@@ -171,7 +178,7 @@ const Header = () => {
           
           {/* Tablet & Laptop: Inline Navigation (visible on md and above) */}
           <nav className="hidden md:flex items-center gap-8">
-            {menuOptions.slice(0, 4).map((item) => {
+            {menuOptions.map((item) => {
               const isActive =
                 pathname === item.path ||
                 (item.path === "/result" &&
@@ -212,16 +219,6 @@ const Header = () => {
                 </div>
               );
             })}
-            <Link
-              href="/aboutus"
-              className={`${
-                isAboutUsActive 
-                  ? "text-white font-bold relative after:content-[''] after:absolute after:bottom-[-8px] after:left-0 after:w-full after:h-[3px] after:bg-indigo-500 after:rounded-full"
-                  : "text-gray-300 hover:text-indigo-300 transition-colors font-medium"
-              }`}
-            >
-              About Us
-            </Link>
           </nav>
         </div>
         

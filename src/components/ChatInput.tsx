@@ -2,13 +2,31 @@
 
 import { useState, useRef, useEffect, FormEvent, useLayoutEffect } from "react";
 import { Button } from "./ui/button";
-import { ArrowUp, CircleStop } from "lucide-react"; // Updated: Using CircleStop instead of Loader2
+import { ArrowUp, CircleStop } from "lucide-react";
 import toast from "react-hot-toast";
 import { Textarea } from "./ui/textarea";
 import { useStreaming } from "./StreamingContext";
+import { moderateMessage } from "./moderator";
+
+// Define a type for moderated responses
+export interface ModeratedResponse {
+  simulatedResponse: {
+    id: number;
+    sender: "user";
+    message: string;
+  };
+  aiResponse: {
+    id: number;
+    sender: "ai";
+    message: string;
+    fullText: string;
+    isLoading: boolean;
+    stream: boolean;
+  };
+}
 
 interface ChatInputProps {
-  onSubmit: (query: string) => Promise<void>;
+  onSubmit: (query: string, moderatedResponse?: ModeratedResponse) => Promise<void>;
   conversationOpen?: boolean;
 }
 
@@ -17,12 +35,14 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isStreaming, isStreamingComplete, setIsStreaming, setIsStreamingComplete } = useStreaming();
   const [submitClicked, setSubmitClicked] = useState(false);
+  const [isInputBlocked, setIsInputBlocked] = useState(false);
 
   const autoResize = () => {
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       const computedStyle = window.getComputedStyle(textareaRef.current);
-      const lineHeight = parseInt(computedStyle.lineHeight);
+      // Ensure the lineHeight is parsed as a number (default to 20px if parsing fails)
+      const lineHeight = parseInt(computedStyle.lineHeight) || 20;
       const maxRows = 8;
       const queryRows = maxRows - 2; // Reserve 2 rows for buttons
       const maxHeight = lineHeight * queryRows;
@@ -37,20 +57,19 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
     autoResize();
   }, [prompt]);
 
-  // New useEffect to reset streaming state when a new session is triggered
+  // Effect to reset streaming state when a new session is triggered
   useEffect(() => {
     const handleNewSession = () => {
-      // Reset streaming state so that the chat input icon reverts to ArrowUp
       setIsStreaming(false);
       setIsStreamingComplete(true);
-      // Optionally, clear the prompt as well:
       setPrompt("");
+      setIsInputBlocked(false);
     };
     window.addEventListener("new-session", handleNewSession);
     return () => window.removeEventListener("new-session", handleNewSession);
   }, [setIsStreaming, setIsStreamingComplete]);
 
-  // New useEffect: Set streaming to true as soon as the submit button is pressed
+  // Set streaming to true as soon as the submit button is pressed
   useEffect(() => {
     if (submitClicked) {
       setIsStreaming(true);
@@ -60,11 +79,50 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
   const handleSendMessage = async (e?: FormEvent) => {
     if (e) e.preventDefault();
     if (!prompt) return;
-    // Prevent sending a new query if a streaming response is in progress
-    if (isStreaming || !isStreamingComplete) {
+    
+    // Prevent sending if input is blocked or streaming is in progress
+    if (isInputBlocked || isStreaming || !isStreamingComplete) {
       toast.error("Please wait for the current response to finish!");
       return;
     }
+    
+    // Apply the moderator function
+    const moderation = moderateMessage(prompt);
+    
+    if (moderation.shouldBlock) {
+      if (moderation.isToast) {
+        toast.error(moderation.response);
+        if (prompt.length > 200) {
+          setIsInputBlocked(true);
+          setTimeout(() => {
+            setIsInputBlocked(false);
+            toast.success("You can now continue typing");
+          }, 3000);
+        }
+      } else {
+        // Simulate responses when moderation blocks the query
+        const simulatedResponse = {
+          id: Date.now() + Math.random(),
+          sender: "user" as const,
+          message: prompt
+        };
+        
+        const aiResponse = {
+          id: Date.now() + Math.random(),
+          sender: "ai" as const,
+          message: moderation.response || "",
+          fullText: moderation.response || "",
+          isLoading: false,
+          stream: false
+        };
+        
+        await onSubmit(prompt, { simulatedResponse, aiResponse });
+      }
+      setPrompt("");
+      return;
+    }
+    
+    // If the message passes moderation, proceed normally
     setSubmitClicked(true);
     try {
       await onSubmit(prompt);
@@ -72,10 +130,10 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
       toast.error("Error while sending query!");
     }
     setPrompt("");
-    setSubmitClicked(false); // Reset the submit flag after the query is handled
+    setSubmitClicked(false);
   };
 
-  // New function to handle stopping the streaming response
+  // Function to handle stopping the streaming response
   const handleStopStreaming = () => {
     setIsStreaming(false);
     setIsStreamingComplete(true);
@@ -95,13 +153,23 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
           <Textarea
             ref={textareaRef}
             placeholder="Type your queries here..."
-            disabled={isStreaming || !isStreamingComplete}
+            disabled={isStreaming || !isStreamingComplete || isInputBlocked}
             className="w-full bg-transparent rounded-2xl text-white placeholder:text-zinc-400 resize-none border-2 border-zinc-600 outline-none focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 pb-12 shadow-lg"
             style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
             value={prompt}
             onChange={(e) => {
-              setPrompt(e.target.value);
-              autoResize();
+              const newValue = e.target.value;
+              if (newValue.length <= 200) {
+                setPrompt(newValue);
+                autoResize();
+              } else {
+                toast.error("Please keep your question under 200 characters");
+                setIsInputBlocked(true);
+                setTimeout(() => {
+                  setIsInputBlocked(false);
+                  toast.success("You can now continue typing");
+                }, 3000);
+              }
             }}
             onKeyDown={handleKeyDown}
             rows={2}
@@ -117,7 +185,7 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
                   handleStopStreaming();
                 }
               }}
-              disabled={!isStreaming && !prompt}
+              disabled={!isStreaming && (!prompt || isInputBlocked)}
               className="rounded-full px-2 border dark:border-zinc-600 bg-white text-black hover:bg-gray-100 transition-transform duration-150"
             >
               {isStreaming || !isStreamingComplete ? (

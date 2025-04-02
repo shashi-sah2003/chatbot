@@ -73,10 +73,10 @@ const PageTransition = ({ children }) => {
             animate={{ opacity: 1 }}
             exit={{ opacity: 0, transition: { duration: 0.3 } }}
           >
-            <div className="relative">
+            <div className="relative px-4 sm:px-0">
               <Loader />
               <motion.div
-                className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 text-indigo-300 text-sm font-medium tracking-wider"
+                className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 text-indigo-300 text-sm font-medium tracking-wider text-center w-full max-w-xs"
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ 
                   opacity: [0, 1, 1], 
@@ -109,7 +109,7 @@ const PageTransition = ({ children }) => {
             } 
           }}
           exit={{ opacity: 0, y: -5, transition: { duration: 0.2 } }}
-          className="min-h-screen"
+          className="min-h-screen w-full"
         >
           {children}
         </motion.div>

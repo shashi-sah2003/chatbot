@@ -19,7 +19,8 @@ interface FormData {
 export default function UploadQuestionPaper() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showSubjectSuggestions, setShowSubjectSuggestions] = useState(false);
+  const [showBranchSuggestions, setShowBranchSuggestions] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   // List of all subjects
@@ -107,6 +108,24 @@ export default function UploadQuestionPaper() {
     "Wireless Mobile Computing"
   ];
 
+  // List of all branches
+  const branches = [
+    "Chemical Engineering",
+    "Mathematics and Computing",
+    "Engineering Physics",
+    "Biotechnology",
+    "Civil Engineering",
+    "Computer Science & Engineering",
+    "Electronics and Communication Engineering",
+    "Electrical Engineering",
+    "Environmental Engineering",
+    "Information Technology",
+    "Mechanical Engineering",
+    "Production and Industrial Engineering",
+    "Mechanical Engineering with Specialization in Automotive Engineering",
+    "Software Engineering"
+  ];
+
   // useForm hook with our typed form data.
   const {
     register,
@@ -117,23 +136,38 @@ export default function UploadQuestionPaper() {
     formState: { errors }
   } = useForm<FormData>();
 
-  // Watch the subject field for filtering suggestions
+  // Watch the subject and course field for filtering suggestions
   const subjectQuery = watch("subject", "");
+  const branchQuery = watch("course", "");
 
   // Filter subjects based on subjectQuery (case insensitive)
   const filteredSubjects = subjects.filter((subject) =>
     subject.toLowerCase().includes(subjectQuery.toLowerCase())
   );
 
-  // Ref for handling outside clicks for the subject suggestions
+  // Filter branches based on branchQuery (case insensitive)
+  const filteredBranches = branches.filter((branch) =>
+    branch.toLowerCase().includes(branchQuery.toLowerCase())
+  );
+
+  // Ref for handling outside clicks
   const subjectWrapperRef = useRef<HTMLDivElement>(null);
+  const branchWrapperRef = useRef<HTMLDivElement>(null);
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
         subjectWrapperRef.current &&
         !subjectWrapperRef.current.contains(event.target as Node)
       ) {
-        setShowSuggestions(false);
+        setShowSubjectSuggestions(false);
+      }
+      
+      if (
+        branchWrapperRef.current &&
+        !branchWrapperRef.current.contains(event.target as Node)
+      ) {
+        setShowBranchSuggestions(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -150,7 +184,8 @@ export default function UploadQuestionPaper() {
     } else {
       setShowModal(false);
       reset();
-      setShowSuggestions(false);
+      setShowSubjectSuggestions(false);
+      setShowBranchSuggestions(false);
       // Removed re-enable of body scrolling on modal close
     }
   }, [isModalOpen, reset]);
@@ -176,8 +211,10 @@ export default function UploadQuestionPaper() {
         }
       });
 
-      // Replace YOUR_BACKEND_ENDPOINT_HERE with your actual API endpoint.
-      const response = await axios.post("YOUR_BACKEND_ENDPOINT_HERE", formData, {
+      
+      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+      const response = await axios.post(
+        `${baseUrl}/upload_pyq_paper`, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
@@ -196,14 +233,14 @@ export default function UploadQuestionPaper() {
   };
 
   const currentYear = new Date().getFullYear();
-  const yearOptions = Array.from({ length: 10 }, (_, i) => currentYear - i);
+  const yearOptions = Array.from({ length: 8 }, (_, i) => currentYear - i);
   
   const monthOptions = [
     "January", "February", "March", "April", "May", "June", 
     "July", "August", "September", "October", "November", "December"
   ];
   
-  const examTypeOptions = ["Mid Semester", "End Semester", "Suppliment", "Quiz"];
+  const examTypeOptions = ["Mid Semester", "End Semester", "Supplement", "Quiz"];
 
   return (
     <>
@@ -273,10 +310,10 @@ export default function UploadQuestionPaper() {
                     placeholder="Type to search..."
                     className="w-full border rounded p-2 text-white bg-[#2f2f2f] border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
                     {...register("subject", { required: "Subject is required" })}
-                    onFocus={() => setShowSuggestions(true)}
+                    onFocus={() => setShowSubjectSuggestions(true)}
                     disabled={submitting}
                   />
-                  {showSuggestions && subjectQuery && (
+                  {showSubjectSuggestions && subjectQuery && (
                     <div className="absolute z-50 mt-1 w-full bg-[#2f2f2f] border border-gray-600 rounded max-h-40 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
                       {filteredSubjects.length > 0 ? (
                         filteredSubjects.map((subject, idx) => (
@@ -284,7 +321,7 @@ export default function UploadQuestionPaper() {
                             key={idx}
                             onClick={() => {
                               setValue("subject", subject);
-                              setShowSuggestions(false);
+                              setShowSubjectSuggestions(false);
                             }}
                             className="cursor-pointer px-3 py-2 hover:bg-gray-700 text-white text-sm transition-colors"
                           >
@@ -305,17 +342,41 @@ export default function UploadQuestionPaper() {
                   )}
                 </div>
 
-                <div>
+                {/* Branch Field with Filterable Dropdown */}
+                <div className="relative" ref={branchWrapperRef}>
                   <label className="block text-sm font-medium text-white mb-1">
                     Branch
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. Computer Science and Engineering"
+                    placeholder="Type to search..."
                     className="w-full border rounded p-2 text-white bg-[#2f2f2f] border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
                     {...register("course", { required: "Branch is required" })}
+                    onFocus={() => setShowBranchSuggestions(true)}
                     disabled={submitting}
                   />
+                  {showBranchSuggestions && branchQuery && (
+                    <div className="absolute z-50 mt-1 w-full bg-[#2f2f2f] border border-gray-600 rounded max-h-40 overflow-auto scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-gray-800">
+                      {filteredBranches.length > 0 ? (
+                        filteredBranches.map((branch, idx) => (
+                          <div
+                            key={idx}
+                            onClick={() => {
+                              setValue("course", branch);
+                              setShowBranchSuggestions(false);
+                            }}
+                            className="cursor-pointer px-3 py-2 hover:bg-gray-700 text-white text-sm transition-colors"
+                          >
+                            {branch}
+                          </div>
+                        ))
+                      ) : (
+                        <div className="px-3 py-2 text-white text-sm">
+                          No branches found
+                        </div>
+                      )}
+                    </div>
+                  )}
                   {errors.course && (
                     <span className="text-red-500 text-xs mt-1 block">
                       {errors.course.message}

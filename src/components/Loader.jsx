@@ -1,4 +1,3 @@
-// components/Loader.jsx
 "use client";
 import { motion } from "framer-motion";
 import React from "react";
@@ -20,12 +19,12 @@ const Loader = () => {
   });
 
   return (
-    <div className="flex flex-col items-center justify-center">
-      {/* Spinner ring */}
+    <div className="flex flex-col items-center justify-center w-full">
+      {/* Spinner ring - responsive sizes */}
       <div className="relative">
-        {/* Outer ring */}
+        {/* Outer ring - responsive sizes based on screen */}
         <motion.div 
-          className="w-16 h-16 rounded-full border-t-4 border-b-4 border-indigo-500/70"
+          className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full border-t-3 sm:border-t-4 border-b-3 sm:border-b-4 border-indigo-500/70"
           animate={{ 
             rotate: 360
           }}
@@ -36,9 +35,9 @@ const Loader = () => {
           }}
         />
         
-        {/* Inner ring */}
+        {/* Inner ring - responsive sizes based on screen */}
         <motion.div 
-          className="absolute top-1 left-1 w-14 h-14 rounded-full border-r-4 border-l-4 border-indigo-300/70"
+          className="absolute top-1 left-1 w-10 h-10 sm:w-12 sm:h-12 md:w-14 md:h-14 rounded-full border-r-3 sm:border-r-4 border-l-3 sm:border-l-4 border-indigo-300/70"
           animate={{ 
             rotate: -360
           }}
@@ -55,7 +54,7 @@ const Loader = () => {
             {[0, 1, 2].map((i) => (
               <motion.div
                 key={i}
-                className="w-2 h-2 bg-indigo-400 rounded-full"
+                className="w-1.5 h-1.5 sm:w-2 sm:h-2 bg-indigo-400 rounded-full"
                 variants={dotVariants}
                 initial="initial"
                 animate="animate"
