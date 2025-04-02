@@ -47,8 +47,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
     ]);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      const response = await axios.post(`${baseUrl}${apiEndpoint}`, { query: userQuery });
+      const response = await axios.post(`/api/${apiEndpoint}`, { query: userQuery });
       let fullText = response.data.response;
       if (!fullText || typeof fullText !== "string") {
         fullText = sampleMarkdown;
