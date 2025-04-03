@@ -107,6 +107,11 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
           )
         );
         setIsStreaming(false);
+    try {
+      const response = await axios.post(`/api${apiEndpoint}`, { query: userQuery });
+      let fullText = response.data.response;
+      if (!fullText || typeof fullText !== "string") {
+        fullText = sampleMarkdown;
       }
     }
   };

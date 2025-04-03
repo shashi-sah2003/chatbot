@@ -78,9 +78,8 @@ export default function ChatPage() {
     ]);
 
     try {
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
       const response = await axios.post<PyqPapersResponse>(
-        `${baseUrl}/pyq_papers`,
+        '/api/pyq_papers',
         { query: userQuery }
       );
       let papersArray: Paper[] | null = null;

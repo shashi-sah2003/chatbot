@@ -33,8 +33,7 @@ const FeedbackDialog = () => {
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-      const response = await axios.post(`${baseUrl}/feedback`, data);
+      const response = await axios.post('api/feedback', data);
       if (response.status === 200) {
         // Show a toast based on sentiment if available
         if (feedbackData.sentiment === "like") {
