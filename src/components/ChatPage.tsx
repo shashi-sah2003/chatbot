@@ -7,7 +7,18 @@ import { useScrollToBottom } from "./useScrollToBottom";
 import { FeedbackProvider } from "@/components/FeedbackContext";
 import FeedbackDialog from "@/components/FeedbackDialog";
 import { StreamingContext } from "./StreamingContext";
-import UploadQuestionPaper from "@/components/UploadQuestionPaper"; // adjust the import path as needed
+
+/**
+ * Removes the word "None" when it appears as a last name.
+ * The function looks for patterns where a non-space sequence is followed by one or more spaces and then "None",
+ * and replaces the match with just the first name.
+ *
+ * @param {string} text - The input text containing names.
+ * @returns {string} The processed text with "None" removed from names.
+ */
+function removeNoneLastName(text: string): string {
+  return text.replace(/\b(\S+)\s+None\b/g, '$1');
+}
 
 export interface ChatMessage {
   id: number;
@@ -23,6 +34,14 @@ interface ChatPageProps {
   welcomeMessage: string;
 }
 
+// Define the interface for moderatedResponse
+interface ModeratedResponse {
+  aiResponse: {
+    message: string | React.ReactNode;
+    fullText?: string | React.ReactNode;
+  };
+}
+
 const sampleMarkdown = `Unexpected error occurred. Please try again later.`;
 
 export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps) {
@@ -36,39 +55,64 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
     setChatHistory([]);
   }, []);
 
-  const handleUserSubmit = async (userQuery: string) => {
+  const handleUserSubmit = async (userQuery: string, moderatedResponse?: ModeratedResponse) => {
     const userMsgId = Date.now() + Math.random();
     const aiMsgId = Date.now() + Math.random();
 
+    // Add user's message and a loading AI message immediately
     setChatHistory((prev) => [
       ...prev,
       { id: userMsgId, sender: "user", message: userQuery },
-      { id: aiMsgId, sender: "ai", message: "", isLoading: true, stream: true },
+      { id: aiMsgId, sender: "ai", message: "", isLoading: true, stream: true }
     ]);
+    setIsStreaming(true); // Disable input during processing
 
+    if (moderatedResponse) {
+      const { aiResponse } = moderatedResponse;
+      // Delay the moderated response by 1 second
+      setTimeout(() => {
+        setChatHistory((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMsgId
+              ? { ...msg, message: aiResponse.message, fullText: aiResponse.fullText, isLoading: false, stream: false }
+              : msg
+          )
+        );
+        setIsStreaming(false); // Re-enable input after response
+      }, 1000);
+    } else {
+      // Proceed to backend for non-moderated queries
+      try {
+        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+        const response = await axios.post(`${baseUrl}${apiEndpoint}`, { query: userQuery });
+        const fullText =
+          typeof response.data.response === "string" && response.data.response.trim().length > 0
+            ? removeNoneLastName(response.data.response)
+            : sampleMarkdown;
+        setChatHistory((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMsgId
+              ? { ...msg, message: fullText, fullText, isLoading: false, stream: false }
+              : msg
+          )
+        );
+        setIsStreaming(false);
+      } catch (error) {
+        const plainText = sampleMarkdown;
+        setChatHistory((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMsgId
+              ? { ...msg, message: plainText, fullText: sampleMarkdown, isLoading: false, stream: false }
+              : msg
+          )
+        );
+        setIsStreaming(false);
     try {
       const response = await axios.post(`/api${apiEndpoint}`, { query: userQuery });
       let fullText = response.data.response;
       if (!fullText || typeof fullText !== "string") {
         fullText = sampleMarkdown;
       }
-      const plainText = fullText;
-      setChatHistory((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMsgId
-            ? { ...msg, fullText, isLoading: false, stream: false, message: plainText }
-            : msg
-        )
-      );
-    } catch (error) {
-      const plainText = sampleMarkdown;
-      setChatHistory((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMsgId
-            ? { ...msg, message: plainText, fullText: sampleMarkdown, isLoading: false, stream: false }
-            : msg
-        )
-      );
     }
   };
 
@@ -139,9 +183,6 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
           <div className="sticky bottom-0 z-10 bg-[#212121] w-full p-4">
             <ChatInput onSubmit={handleUserSubmit} conversationOpen={conversationOpen} />
           </div>
-
-          {/* Render UploadQuestionPaper below ChatInput only if welcomeMessage matches */}
-          {welcomeMessage === "Welcome to Pyq's Section" && <UploadQuestionPaper />}
         </div>
         <FeedbackDialog />
       </FeedbackProvider>

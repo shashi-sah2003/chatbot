@@ -1,6 +1,6 @@
 "use client";
 import React, { useState, useContext } from "react";
-import { Bot } from "lucide-react";
+import Image from "next/image";
 import {
   AiOutlineLike,
   AiFillLike,
@@ -93,11 +93,20 @@ const ChatBubble = ({
         className="flex flex-col items-start w-full"
       >
         <div className="flex items-start w-full">
-          <div className="flex items-center justify-center w-8 h-8 text-white">
-            <Bot size={18} />
+          <div className="flex items-center justify-center w-8 h-11 text-white">
+            <div className="relative" style={{ width: 25, height: 25 }}>
+              <Image 
+                src="/bot.svg" 
+                alt="Bot" 
+                width={25} 
+                height={25} 
+                className="text-[#4a4de7]"
+                style={{ filter: "invert(32%) sepia(84%) saturate(1250%) hue-rotate(210deg) brightness(80%) contrast(95%)" }}
+              />
+            </div>
           </div>
-          <div className="ml-2 flex-1 overflow-x-hidden">
-            <div className="chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[80%] break-words">
+          <div className="ml-2 flex-1 w-full">
+            <div className="chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[95%] break-words">
               {!isFullHTML && displayText && (
                 <MarkdownRenderer content={displayText} speed={3}/>
               )}

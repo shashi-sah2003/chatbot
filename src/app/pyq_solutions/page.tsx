@@ -100,7 +100,6 @@ export default function ChatPage() {
       }
 
       if (papersArray) {
-        console.log(papersArray);
         const markdownTable = generateMarkdownTable(papersArray);
         // Update the AI message in chat history with the markdown table
         setChatHistory((prev) =>

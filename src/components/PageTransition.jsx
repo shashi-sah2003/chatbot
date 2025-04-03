@@ -9,7 +9,7 @@ const PageTransition = ({ children }) => {
   const [loading, setLoading] = useState(false);
   const [prevPath, setPrevPath] = useState(pathname);
   const loaderStartTimeRef = useRef(0);
-  const minLoaderTime = 300; // Minimum loader display time in ms
+  const minLoaderTime = 400; // Slightly increased for a more polished feel
 
   // Listen for clicks on internal links, but ignore clicks that navigate to the current page.
   const handleNavigationStart = useCallback((e) => {
@@ -68,25 +68,52 @@ const PageTransition = ({ children }) => {
       <AnimatePresence>
         {loading && (
           <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50"
+            className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-black/70 to-black/80 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+            exit={{ opacity: 0, transition: { duration: 0.3 } }}
           >
-            <Loader />
+            <div className="relative px-4 sm:px-0">
+              <Loader />
+              <motion.div
+                className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 text-indigo-300 text-sm font-medium tracking-wider text-center w-full max-w-xs"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ 
+                  opacity: [0, 1, 1], 
+                  y: [10, 0, 0],
+                  transition: { 
+                    duration: 1.5, 
+                    times: [0, 0.3, 1],
+                    repeat: Infinity
+                  }
+                }}
+              >
+              </motion.div>
+            </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Page Content with Fade Transition */}
-      <motion.div
-        key={pathname}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1, transition: { delay: loading ? 0.3 : 0 } }}
-        exit={{ opacity: 0 }}
-      >
-        {children}
-      </motion.div>
+      {/* Page Content with Transition */}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={pathname}
+          initial={{ opacity: 0, y: 5 }}
+          animate={{ 
+            opacity: 1, 
+            y: 0, 
+            transition: { 
+              delay: loading ? 0.2 : 0, 
+              duration: 0.4,
+              ease: "easeOut"
+            } 
+          }}
+          exit={{ opacity: 0, y: -5, transition: { duration: 0.2 } }}
+          className="min-h-screen w-full"
+        >
+          {children}
+        </motion.div>
+      </AnimatePresence>
     </>
   );
 };
