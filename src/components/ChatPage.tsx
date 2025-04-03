@@ -42,7 +42,7 @@ interface ModeratedResponse {
   };
 }
 
-const sampleMarkdown = `Unexpected error occurred. Please try again later.`;
+const sampleMarkdown = "Unexpected error occurred. Please try again later.";
 
 export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps) {
   const [containerRef, bottomRef] = useScrollToBottom<HTMLDivElement>();
@@ -83,8 +83,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
     } else {
       // Proceed to backend for non-moderated queries
       try {
-        const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-        const response = await axios.post(`${baseUrl}${apiEndpoint}`, { query: userQuery });
+        const response = await axios.post(`api${apiEndpoint}`, { query: userQuery });
         const fullText =
           typeof response.data.response === "string" && response.data.response.trim().length > 0
             ? removeNoneLastName(response.data.response)
@@ -107,11 +106,6 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
           )
         );
         setIsStreaming(false);
-    try {
-      const response = await axios.post(`/api${apiEndpoint}`, { query: userQuery });
-      let fullText = response.data.response;
-      if (!fullText || typeof fullText !== "string") {
-        fullText = sampleMarkdown;
       }
     }
   };
