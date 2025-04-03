@@ -211,10 +211,9 @@ export default function UploadQuestionPaper() {
         }
       });
 
-      
-      const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
+
       const response = await axios.post(
-        `${baseUrl}/upload_pyq_paper`, {
+        `api/upload_pyq_paper`, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }

@@ -43,12 +43,6 @@ const menuOptions: MenuOption[] = [
     description: "get previous year papers",
     path: "/pyq_solutions",
   },
-  {
-    id: 4,
-    label: "About Us",
-    description: "Learn about our team",
-    path: "/aboutus",
-  },
 ];
 
 const Header = () => {
@@ -73,19 +67,7 @@ const Header = () => {
     // Reset conversationOpen on every route change
     setConversationOpen(false);
   
-    if (pathname === "/aboutus") {
-      setCurrentButton("About Us");
-      setFilteredMenuItems(menuOptions.filter((item) => item.path !== "/aboutus"));
-      toast.success(`Switched to About Us`, {
-        position: "top-center",
-        style: { 
-          background: "linear-gradient(to right, #2F2F2F, #3a3a3a)", 
-          color: "#fff",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.2)",
-          borderLeft: "4px solid #4f46e5"
-        },
-      });
-    } else if (pathname === "/result_26" || pathname === "/result_27") {
+   if (pathname === "/result_26" || pathname === "/result_27") {
       const label = pathname === "/result_26" ? "Result-26" : "Result-27";
       setCurrentButton(label);
       setFilteredMenuItems(menuOptions.filter((item) => item.path !== "/result"));

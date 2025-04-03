@@ -85,7 +85,6 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
       try {
         const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
         const response = await axios.post(`${baseUrl}${apiEndpoint}`, { query: userQuery });
-        console.log("Response from backend:", response.data);
         const fullText =
           typeof response.data.response === "string" && response.data.response.trim().length > 0
             ? removeNoneLastName(response.data.response)

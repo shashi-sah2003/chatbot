@@ -106,7 +106,7 @@ const ChatBubble = ({
             </div>
           </div>
           <div className="ml-2 flex-1 w-full">
-            <div className="chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[90%] break-words">
+            <div className="chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[95%] break-words">
               {!isFullHTML && displayText && (
                 <MarkdownRenderer content={displayText} speed={3}/>
               )}

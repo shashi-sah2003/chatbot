@@ -2,6 +2,7 @@
 import React, { useEffect, useState, useMemo, useCallback } from "react";
 import axios from "axios";
 import Loader from "@/components/Loader";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Accordion,
   AccordionSummary,
@@ -199,8 +200,41 @@ export default function Notices() {
   }, [notifications, filter, debouncedSearchTerm]);
 
   if (loading) {
-    return <Loader />;
-  }
+    return (
+        <>
+          {/* Loader Overlay */}
+          <AnimatePresence>
+            {loading && (
+              <motion.div
+                className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-black/70 to-black/80 backdrop-blur-sm"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0, transition: { duration: 0.3 } }}
+              >
+                <div className="relative px-4 sm:px-0">
+                  <Loader />
+                  <motion.div
+                    className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 text-indigo-300 text-sm font-medium tracking-wider text-center w-full max-w-xs"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ 
+                      opacity: [0, 1, 1], 
+                      y: [10, 0, 0],
+                      transition: { 
+                        duration: 1.5, 
+                        times: [0, 0.3, 1],
+                        repeat: Infinity
+                      }
+                    }}
+                  >
+                  </motion.div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>  
+        );
+      };
+  
 
   return (
     <div className="flex flex-col h-screen w-full max-w-screen-md pb-16 mx-auto bg-[#212121] px-4">
