@@ -179,7 +179,7 @@ export default function ChatPage() {
       value={{ isStreaming, setIsStreaming, isStreamingComplete, setIsStreamingComplete }}
     >
       <FeedbackProvider>
-        <div className="flex flex-col h-screen w-full max-w-screen-md overflow-x-hidden mx-auto bg-[#212121]">
+        <div className="flex flex-col overflow-y-auto overflow-x-hidden h-[90dvh] w-full max-w-screen-md mx-auto bg-[#212121]">
           {!conversationOpen && (
             <div className="text-center mt-28">
               <h2 className="text-3xl sm:text-5xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent">
@@ -189,7 +189,7 @@ export default function ChatPage() {
           )}
 
           {conversationOpen && (
-            <div className="flex-1 overflow-x-hidden">
+            <div className="flex-1 overflow-y-auto overflow-x-hidden">
               <div ref={containerRef} className="flex flex-col space-y-4 p-4 ">
                 {chatHistory.map((msg, index) => {
                   let associatedUserQuery = "";
@@ -223,12 +223,12 @@ export default function ChatPage() {
           )}
 
           {/* Render the chat input */}
-          <div className="sticky bottom-0 z-10 bg-[#212121] w-full p-4">
+          <div className="sticky bottom-0 z-10 bg-[#212121] w-full px-4 pb-4">
             <ChatInput onSubmit={handleUserSubmit} conversationOpen={conversationOpen} />
           </div>
 
           {/* Render UploadQuestionPaper below ChatInput if welcomeMessage exists */}
-          {welcomeMessage && <UploadQuestionPaper />}
+          {!conversationOpen && <UploadQuestionPaper />}
         </div>
         <FeedbackDialog />
       </FeedbackProvider>

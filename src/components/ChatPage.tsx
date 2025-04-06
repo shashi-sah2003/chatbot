@@ -132,53 +132,54 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
   return (
     <StreamingContext.Provider value={{ isStreaming, setIsStreaming, isStreamingComplete, setIsStreamingComplete }}>
       <FeedbackProvider>
-        <div className="flex flex-col h-screen w-full max-w-screen-md mx-auto bg-[#212121]">
-          {!conversationOpen && (
-            <div className="text-center mt-28">
-              <h2 className="text-3xl sm:text-5xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent">
-                {welcomeMessage}
-              </h2>
-            </div>
-          )}
+      <div className="flex flex-col overflow-auto h-[90dvh] w-full max-w-screen-md mx-auto bg-[#212121]">
+        {!conversationOpen && (
+    <div className="text-center mt-28">
+      <h2 className="text-3xl sm:text-5xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent">
+        {welcomeMessage}
+      </h2>
+    </div>
+  )}
 
-          {conversationOpen && (
-            <div className="flex-1 overflow-auto mb-16">
-              <div ref={containerRef} className="flex flex-col space-y-4 p-4">
-                {chatHistory.map((msg, index) => {
-                  let associatedUserQuery = "";
-                  let showFeedbackIcons = false;
-                  if (
-                    msg.sender === "ai" &&
-                    index === chatHistory.length - 1 &&
-                    chatHistory[index - 1]?.sender === "user" &&
-                    !msg.isLoading &&
-                    !isStreaming
-                  ) {
-                    associatedUserQuery = chatHistory[index - 1].message as string;
-                    showFeedbackIcons = true;
-                  }
-                  return (
-                    <ChatBubble
-                      key={msg.id}
-                      sender={msg.sender}
-                      message={msg.message}
-                      fullText={msg.fullText}
-                      isLoading={msg.isLoading}
-                      stream={msg.stream}
-                      associatedUserQuery={associatedUserQuery}
-                      showFeedbackIcons={showFeedbackIcons}
-                    />
-                  );
-                })}
-                <div ref={bottomRef} />
-              </div>
-            </div>
-          )}
+  {conversationOpen && (
+    <div className="flex-1 overflow-auto">
+      <div ref={containerRef} className="flex flex-col space-y-4 px-4 pt-4">
+        {chatHistory.map((msg, index) => {
+          let associatedUserQuery = "";
+          let showFeedbackIcons = false;
+          if (
+            msg.sender === "ai" &&
+            index === chatHistory.length - 1 &&
+            chatHistory[index - 1]?.sender === "user" &&
+            !msg.isLoading &&
+            !isStreaming
+          ) {
+            associatedUserQuery = chatHistory[index - 1].message as string;
+            showFeedbackIcons = true;
+          }
+          return (
+            <ChatBubble
+              key={msg.id}
+              sender={msg.sender}
+              message={msg.message}
+              fullText={msg.fullText}
+              isLoading={msg.isLoading}
+              stream={msg.stream}
+              associatedUserQuery={associatedUserQuery}
+              showFeedbackIcons={showFeedbackIcons}
+            />
+          );
+        })}
+        <div ref={bottomRef} />
+      </div>
+    </div>
+  )}
 
-          <div className="sticky bottom-0 z-10 bg-[#212121] w-full p-4">
-            <ChatInput onSubmit={handleUserSubmit} conversationOpen={conversationOpen} />
-          </div>
-        </div>
+  <div className="sticky bottom-0 z-10 bg-[#212121] w-full px-4 pb-4">
+    <ChatInput onSubmit={handleUserSubmit} conversationOpen={conversationOpen} />
+  </div>
+</div>
+
         <FeedbackDialog />
       </FeedbackProvider>
     </StreamingContext.Provider>
