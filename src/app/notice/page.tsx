@@ -136,7 +136,8 @@ export default function Notices() {
     const fetchNotifications = async () => {
       setLoading(true);
       try {
-        const response = await axios.get(`${baseUrl}/chat/information`);
+      const response = await axios.get('/api/chat/information'
+        );
         if (response.data.response && Array.isArray(response.data.response)) {
           setNotifications(response.data.response);
           setError("");
