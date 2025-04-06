@@ -17,7 +17,7 @@ interface AnimatedMarkdownTextProps {
 
 const AnimatedMarkdownText: React.FC<AnimatedMarkdownTextProps> = ({
   markdownString,
-  speed = 5,
+  speed = 10,
   onComplete,
 }) => {
   const [displayedMarkdown, setDisplayedMarkdown] = useState("");

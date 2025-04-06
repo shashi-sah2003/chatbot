@@ -33,7 +33,7 @@ const ChatBubble = ({
   showFeedbackIcons = false,
 }: ChatBubbleProps) => {
   const isUser = sender === "user";
-  const { isStreamingComplete } = useStreaming();
+  const { isStreamingComplete, isStreaming } = useStreaming();
   const { openFeedback } = useContext(FeedbackContext);
   const [feedback, setFeedback] = useState<"none" | "like" | "dislike">("none");
   const [feedbackDisabled, setFeedbackDisabled] = useState(false);
@@ -108,13 +108,13 @@ const ChatBubble = ({
           <div className="ml-2 flex-1 w-full">
             <div className="chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[95%] break-words">
               {!isFullHTML && displayText && (
-                <MarkdownRenderer content={displayText} speed={3}/>
+                <MarkdownRenderer content={displayText} speed={7}/>
               )}
               {isLoading && <AILoading />}
             </div>
           </div>
         </div>
-        {showFeedbackIcons && isStreamingComplete && (
+        {showFeedbackIcons && isStreamingComplete && !isStreaming && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}

@@ -25,7 +25,7 @@ function getLinkRanges(text: string): { start: number; end: number }[] {
 export const streamChat = (
   fullText: string,
   onUpdate: (partialText: string) => void,
-  speed: number = 5,
+  speed: number = 10,
   onComplete?: () => void,
   shouldContinue: () => boolean = () => true
 ): NodeJS.Timeout => {
