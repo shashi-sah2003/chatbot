@@ -16,7 +16,7 @@ import {
   Paper,
   InputAdornment,
   TextField,
-  Tooltip
+  Tooltip,
 } from "@mui/material";
 import { styled, alpha } from "@mui/material/styles";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
@@ -24,10 +24,13 @@ import SearchIcon from "@mui/icons-material/Search";
 import OpenInNewIcon from "@mui/icons-material/OpenInNew";
 import ErrorOutlineIcon from "@mui/icons-material/ErrorOutline";
 import CircleIcon from "@mui/icons-material/Circle";
+import { Box } from "@mui/material";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Enhanced styled components
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
-  backgroundColor: alpha('#2d2d2d', 0.8),
+  backgroundColor: alpha("#2d2d2d", 0.8),
   color: "#f5f5f5",
   marginBottom: "12px",
   borderRadius: "10px !important",
@@ -44,7 +47,7 @@ const StyledAccordion = styled(Accordion)(({ theme }) => ({
   },
   "&.Mui-expanded": {
     boxShadow: "0 8px 16px rgba(0, 0, 0, 0.4)",
-  }
+  },
 }));
 
 const NotificationDot = styled(CircleIcon)({
@@ -108,15 +111,15 @@ interface Notification {
 // A simple debounce hook to delay search input updates
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
-  
+
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
-    
+
     return () => clearTimeout(handler);
   }, [value, delay]);
-  
+
   return debouncedValue;
 }
 
@@ -128,7 +131,7 @@ export default function Notices() {
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
   const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
-  
+
   // Debounced search term to reduce filtering frequency
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
 
@@ -136,8 +139,7 @@ export default function Notices() {
     const fetchNotifications = async () => {
       setLoading(true);
       try {
-      const response = await axios.get('/api/chat/information'
-        );
+        const response = await axios.get("/api/chat/information");
         if (response.data.response && Array.isArray(response.data.response)) {
           setNotifications(response.data.response);
           setError("");
@@ -157,10 +159,11 @@ export default function Notices() {
   }, [baseUrl]);
 
   const handleChange = useCallback(
-    (panelIndex: number) => (event: React.SyntheticEvent, isExpanded: boolean) => {
-      const panelId = `panel${panelIndex}`;
-      setExpanded(isExpanded ? panelId : false);
-    },
+    (panelIndex: number) =>
+      (event: React.SyntheticEvent, isExpanded: boolean) => {
+        const panelId = `panel${panelIndex}`;
+        setExpanded(isExpanded ? panelId : false);
+      },
     []
   );
 
@@ -194,48 +197,49 @@ export default function Notices() {
   const filteredNotifications = useMemo(() => {
     return notifications
       .map((notification, index) => ({ notification, index }))
-      .filter(({ notification }) =>
-        (filter === "All" || notification.category === filter) &&
-        notification.title.toLowerCase().includes(debouncedSearchTerm.toLowerCase())
+      .filter(
+        ({ notification }) =>
+          (filter === "All" || notification.category === filter) &&
+          notification.title
+            .toLowerCase()
+            .includes(debouncedSearchTerm.toLowerCase())
       );
   }, [notifications, filter, debouncedSearchTerm]);
 
   if (loading) {
     return (
-        <>
-          {/* Loader Overlay */}
-          <AnimatePresence>
-            {loading && (
-              <motion.div
-                className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-black/70 to-black/80 backdrop-blur-sm"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                exit={{ opacity: 0, transition: { duration: 0.3 } }}
-              >
-                <div className="relative px-4 sm:px-0">
-                  <Loader />
-                  <motion.div
-                    className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 text-indigo-300 text-sm font-medium tracking-wider text-center w-full max-w-xs"
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ 
-                      opacity: [0, 1, 1], 
-                      y: [10, 0, 0],
-                      transition: { 
-                        duration: 1.5, 
-                        times: [0, 0.3, 1],
-                        repeat: Infinity
-                      }
-                    }}
-                  >
-                  </motion.div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </>  
-        );
-      };
-  
+      <>
+        {/* Loader Overlay */}
+        <AnimatePresence>
+          {loading && (
+            <motion.div
+              className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-black/70 to-black/80 backdrop-blur-sm"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.3 } }}
+            >
+              <div className="relative px-4 sm:px-0">
+                <Loader />
+                <motion.div
+                  className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 text-indigo-300 text-sm font-medium tracking-wider text-center w-full max-w-xs"
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{
+                    opacity: [0, 1, 1],
+                    y: [10, 0, 0],
+                    transition: {
+                      duration: 1.5,
+                      times: [0, 0.3, 1],
+                      repeat: Infinity,
+                    },
+                  }}
+                ></motion.div>
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </>
+    );
+  }
 
   return (
     <div className="flex flex-col h-screen w-full max-w-screen-md pb-16 mx-auto bg-[#212121] px-4">
@@ -268,6 +272,7 @@ export default function Notices() {
             row
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
+            className="gap-2 mt-2"
           >
             <FormControlLabel
               value="All"
@@ -343,9 +348,13 @@ export default function Notices() {
           <Typography variant="body1" sx={{ color: "#f44336" }}>
             {error}
           </Typography>
-          <Typography variant="body2" sx={{ color: "#999", mt: 1, textAlign: "center", px: 3 }}>
+          <Typography
+            variant="body2"
+            sx={{ color: "#999", mt: 1, textAlign: "center", px: 3 }}
+          >
             There was a problem fetching your notifications.
-            <br />Please try again later.
+            <br />
+            Please try again later.
           </Typography>
         </EmptyStateContainer>
       ) : filteredNotifications.length > 0 ? (
@@ -360,81 +369,96 @@ export default function Notices() {
                 key={panelId}
                 expanded={expanded === panelId}
                 onChange={handleChange(index)}
-                sx={{ 
-                  borderLeft: `4px solid ${categoryColor}`
+                sx={{
+                  borderLeft: `4px solid ${categoryColor}`,
                 }}
               >
                 <AccordionSummary
                   expandIcon={
-                    <ExpandMoreIcon 
-                      sx={{ 
+                    <ExpandMoreIcon
+                      sx={{
                         color: "#f5f5f5",
                         transition: "transform 0.3s",
-                        transform: expanded === panelId ? "rotate(180deg)" : "rotate(0deg)"
-                      }} 
+                        transform:
+                          expanded === panelId ? "rotate(180deg)" : "rotate(0deg)",
+                      }}
                     />
                   }
                   aria-controls={`${panelId}-content`}
                   id={`${panelId}-header`}
                   sx={{
-                    minHeight: { xs: "54px", sm: "64px" },
-                    padding: "0 16px",
+                    padding: "8px 16px",
+                    minHeight: { xs: "auto", sm: "64px" },
+                    "& .MuiAccordionSummary-content": {
+                      margin: 0,
+                      display: "flex",
+                      flexDirection: "column", // stacked layout
+                      gap: "4px", // optional: controls space between box and title
+                    },
                   }}
                 >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex flex-col w-full pr-4">
-                      <div className="flex items-center mb-1">
-                        <NotificationDot sx={{ color: categoryColor }} />
-                        <Typography
-                          variant="caption"
-                          sx={{ 
-                            color: categoryColor,
-                            fontWeight: 600,
-                            fontSize: "0.7rem",
-                          }}
-                        >
-                          {categoryLabel}
-                        </Typography>
-                      </div>
-                      <Typography
-                        variant="subtitle1"
-                        sx={{ 
-                          color: "#f5f5f5",
-                          fontWeight: 500,
-                          fontSize: { xs: "0.875rem", sm: "0.95rem" },
-                          lineHeight: 1.4,
-                        }}
-                        className="break-words"
-                      >
-                        {notification.title}
-                      </Typography>
-                      <Typography
-                        variant="caption"
-                        sx={{ 
-                          color: "#bbb",
-                          fontSize: { xs: "0.7rem", sm: "0.75rem" }
-                        }}
-                      >
-                        {notification.timestamp}
-                      </Typography>
-                    </div>
-                  </div>
+                  {/* left chunk */}
+                  <Box
+                    sx={{
+                      display: "flex",
+                      alignItems: "center",
+                      flex: 1,
+                      minWidth: 0,
+                      pr: 2,
+                      
+                    }}
+                    
+                  >
+                    <NotificationDot sx={{ color: categoryColor }} />
+                    <Typography
+                      variant="caption"
+                      sx={{
+                        color: categoryColor,
+                        fontWeight: 600,
+                        fontSize: "0.7rem",
+                        ml: 1,
+                      }}
+                    >
+                      {categoryLabel}
+                    </Typography>
+                  </Box>
+            
+                  {/* title */}
+                  <Typography
+                    variant="subtitle1"
+                    sx={{
+                      color: "#f5f5f5",
+                      fontWeight: 500,
+                      fontSize: { xs: "0.875rem", sm: "0.95rem" },
+                      lineHeight: 1.4,
+                      wordBreak: "break-word",
+                      mt: 0, // removed margin
+                    }}
+                  >
+                    {notification.title}
+                  </Typography>
                 </AccordionSummary>
-                <AccordionDetails sx={{ 
-                  padding: "8px 16px 16px 16px",
-                  backgroundColor: alpha("#1a1a1a", 0.3),
-                }}>
+            
+                <AccordionDetails
+                  sx={{
+                    padding: "8px 16px 16px 16px",
+                    backgroundColor: alpha("#1a1a1a", 0.3),
+                  }}
+                >
                   <Typography
                     variant="body2"
+                    component="div"
                     sx={{
                       marginBottom: 2,
                       lineHeight: 1.6,
                       color: "#e0e0e0",
-                      fontSize: { xs: "0.8rem", sm: "0.85rem" }
+                      fontSize: { xs: "0.8rem", sm: "0.85rem" },
                     }}
                     className="whitespace-pre-wrap break-words"
                   >
-                    {notification.content}
+                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
+      {notification.content}
+    </ReactMarkdown>
                   </Typography>
                   <Link
                     href={notification.url}
@@ -449,8 +473,8 @@ export default function Notices() {
                       fontWeight: 500,
                       transition: "opacity 0.2s",
                       "&:hover": {
-                        opacity: 0.8
-                      }
+                        opacity: 0.8,
+                      },
                     }}
                   >
                     View Details
@@ -459,6 +483,7 @@ export default function Notices() {
                 </AccordionDetails>
               </StyledAccordion>
             );
+            
           })}
         </div>
       ) : (
@@ -468,7 +493,9 @@ export default function Notices() {
             No notifications found
           </Typography>
           <Typography variant="body2" sx={{ color: "#999", mt: 1 }}>
-            {searchTerm ? "Try changing your search or filters" : "You're all caught up!"}
+            {searchTerm
+              ? "Try changing your search or filters"
+              : "You're all caught up!"}
           </Typography>
         </EmptyStateContainer>
       )}
