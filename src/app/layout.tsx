@@ -3,6 +3,7 @@ import "./globals.css";
 import Header from "../components/Header";
 import { Toaster } from "react-hot-toast";
 import PageTransition from "../components/PageTransition";
+import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "DTU ChatBot",
@@ -27,6 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               style: { background: "#000000", color: "#ffffff" },
             }}
           />
+          <Analytics />
       </body>
     </html>
   );

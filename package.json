@@ -19,6 +19,7 @@
     "@radix-ui/react-slot": "^1.1.2",
     "@tabler/icons-react": "^3.30.0",
     "@tailwindcss/typography": "^0.5.16",
+    "@vercel/analytics": "^1.5.0",
     "axios": "^1.7.9",
     "class-variance-authority": "^0.7.1",
     "classix": "^2.2.2",
