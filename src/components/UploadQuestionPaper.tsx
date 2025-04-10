@@ -399,14 +399,14 @@ export default function UploadQuestionPaper() {
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. CO 301"
+                    placeholder="e.g. CO301"
                     className="w-full border rounded p-2 text-white bg-[#2f2f2f] border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
                     {...register("courseCode", {
                       required: "Course Code is required",
                       pattern: {
-                        value: /^[A-Z]{2,3}\s?[0-9]{3}$/,
+                        value: /^[A-Z]{2,3}[0-9]{3}$/,
                         message:
-                          "Invalid course code format. Should contain 2-3 letters followed by 3 numbers",
+                          "Invalid course code format. Should contain 2-3 letters followed by 3 numbers without any space",
                       },
                       setValueAs: (value) => {
                         // Remove any character that is not a letter or a number
