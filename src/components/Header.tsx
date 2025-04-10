@@ -112,7 +112,7 @@ const Header = () => {
 
   return (
     <>
-      <div className="flex items-center justify-between h-16 w-full px-3 sm:px-6 bg-gradient-to-r from-[#1a1a1a] to-[#2F2F2F]">
+      <div className="flex items-center h-[10vh] px-2 justify-between sm:px-6 bg-gradient-to-r from-[#1a1a1a] to-[#2F2F2F]">
         <div className="flex items-center gap-4">
           {/* Mobile: Dropdown Menu (visible below md breakpoint) */}
           <div className="relative md:hidden">

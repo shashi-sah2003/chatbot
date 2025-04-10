@@ -109,7 +109,7 @@ const PageTransition = ({ children }) => {
             } 
           }}
           exit={{ opacity: 0, y: -5, transition: { duration: 0.2 } }}
-          className="min-h-screen w-full"
+          className="w-full"
         >
           {children}
         </motion.div>

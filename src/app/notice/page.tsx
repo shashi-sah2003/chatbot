@@ -206,43 +206,10 @@ export default function Notices() {
       );
   }, [notifications, filter, debouncedSearchTerm]);
 
-  if (loading) {
-    return (
-      <>
-        {/* Loader Overlay */}
-        <AnimatePresence>
-          {loading && (
-            <motion.div
-              className="fixed inset-0 z-50 flex items-center justify-center bg-gradient-to-b from-black/70 to-black/80 backdrop-blur-sm"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0, transition: { duration: 0.3 } }}
-            >
-              <div className="relative px-4 sm:px-0">
-                <Loader />
-                <motion.div
-                  className="absolute -bottom-12 left-1/2 transform -translate-x-1/2 text-indigo-300 text-sm font-medium tracking-wider text-center w-full max-w-xs"
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{
-                    opacity: [0, 1, 1],
-                    y: [10, 0, 0],
-                    transition: {
-                      duration: 1.5,
-                      times: [0, 0.3, 1],
-                      repeat: Infinity,
-                    },
-                  }}
-                ></motion.div>
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </>
-    );
-  }
+  
 
   return (
-    <div className="flex flex-col h-screen w-full max-w-screen-md pb-16 mx-auto bg-[#212121] px-4">
+    <div className="flex flex-col h-[89vh] w-full max-w-screen-md pb-4 mx-auto bg-[#212121] px-4">
       <div className="bg-[#212121] pt-4 pb-2">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-2xl sm:text-4xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent text-center mb-2">
@@ -357,13 +324,22 @@ export default function Notices() {
             Please try again later.
           </Typography>
         </EmptyStateContainer>
+      ) : loading ? (
+        <div className="items-center justify-center">
+          {/* Loader Overlay */}
+          <AnimatePresence>
+            {loading && (
+              <Loader />
+            )}
+          </AnimatePresence>
+        </div>
       ) : filteredNotifications.length > 0 ? (
-        <div className="overflow-y-auto pb-10" style={{ flex: 1 }}>
+        <div className="overflow-y-auto" style={{ flex: 1 }}>
+          
           {filteredNotifications.map(({ notification, index }) => {
             const panelId = `panel${index}`;
             const categoryColor = getCategoryColor(notification.category);
             const categoryLabel = getCategoryLabel(notification.category);
-
             return (
               <StyledAccordion
                 key={panelId}
@@ -457,8 +433,8 @@ export default function Notices() {
                     className="whitespace-pre-wrap break-words"
                   >
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>
-      {notification.content}
-    </ReactMarkdown>
+                      {notification.content}
+                    </ReactMarkdown>
                   </Typography>
                   <Link
                     href={notification.url}
@@ -486,7 +462,7 @@ export default function Notices() {
             
           })}
         </div>
-      ) : (
+      ) : (!loading &&
         <EmptyStateContainer elevation={0}>
           <ErrorOutlineIcon sx={{ color: "#666", fontSize: 40, mb: 2 }} />
           <Typography variant="body1" sx={{ color: "#f5f5f5" }}>

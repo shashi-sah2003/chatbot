@@ -117,7 +117,7 @@ export default function Result(): ReactNode {
   };
 
   return (
-    <div className="min-h-screen w-full max-w-screen-sm px-5 mx-auto bg-[#212121] py-10">
+    <div className="h-[89dvh] w-full max-w-screen-sm px-5 mx-auto bg-[#212121] py-10 my-auto">
       <div className="flex flex-col overflow-auto justify-center w-full">
         {/* Gradient title */}
         <h2 className="text-3xl sm:text-5xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent text-center mb-8">

@@ -3,7 +3,6 @@ import "./globals.css";
 import Header from "../components/Header";
 import { Toaster } from "react-hot-toast";
 import PageTransition from "../components/PageTransition";
-import { Analytics } from "@vercel/analytics/react";
 
 export const metadata: Metadata = {
   title: "DTU ChatBot",
@@ -13,13 +12,13 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body className="bg-[#212121] h-full flex flex-col overflow-hidden">
-
-          <nav className="sticky top-0 z-50 bg-[#212121] bg-opacity-90 backdrop-blur-md shadow-md">
+      <body className="bg-[#212121] h-screen flex flex-col">
+        <div className="flex flex-col overflow-hidden  bg-[#212121]">	
+          <nav className="sticky top-0 z-50 bg-[#212121] bg-opacity-90 p-0 backdrop-blur-md shadow-md">
             <Header />
           </nav>
           <PageTransition>
-              {children}
+            {children}
           </PageTransition>
           <Toaster
             position="top-center"
@@ -28,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               style: { background: "#000000", color: "#ffffff" },
             }}
           />
-          <Analytics />
+        </div>
       </body>
     </html>
   );
