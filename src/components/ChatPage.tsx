@@ -131,7 +131,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
   return (
     <StreamingContext.Provider value={{ isStreaming, setIsStreaming, isStreamingComplete, setIsStreamingComplete }}>
       <FeedbackProvider>
-      <div className="flex flex-col overflow-auto h-[90dvh] w-full max-w-screen-md mx-auto bg-[#212121]">
+      <div className="flex flex-col overflow-auto h-[90dvh] w-full max-w-screen-md mx-auto bg-[#212121]a">
         {!conversationOpen && (
     <div className="text-center mt-28">
       <h2 className="text-3xl sm:text-5xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent">

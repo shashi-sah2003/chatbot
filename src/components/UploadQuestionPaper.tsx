@@ -3,6 +3,7 @@ import { useState, useEffect, useRef } from "react";
 import { useForm, SubmitHandler } from "react-hook-form";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
+import toast from "react-hot-toast";
 
 interface FormData {
   subject: string;
@@ -24,17 +25,35 @@ export default function UploadQuestionPaper() {
   const [submitting, setSubmitting] = useState(false);
 
   // List of all subjects
+  // Updated list of all branches (using branch codes)
+  const branches = [
+    "COE",
+    "HU",
+    "EN",
+    "IT",
+    "SE",
+    "MC",
+    "SW",
+    "EL",
+    "CEC",
+    "EC",
+    "CHU",
+    "PE",
+    "CMG",
+    "MG",
+    "BA"
+  ];
+
+  // Updated list of all subjects
   const subjects = [
-    "Basic Econometrics",
-    "Engineering Economics",
-    "Fundamentals Of Management",
     "Advanced Computer Organization And Architecture",
     "Advanced Database Management System",
     "Advanced Spoken Skills",
     "Air Pollution And Control",
-    "Algorithm Analysis And Design",
-    "Algorithm Design And Analysis Incomplete",
+    "Algorithm Design And Analysis",
+    "Analog Electronics",
     "Artificial Intelligence",
+    "Basic Econometrics",
     "Big Data Analytics",
     "Cloud Computing",
     "Compiler Design",
@@ -49,19 +68,22 @@ export default function UploadQuestionPaper() {
     "Data Warehousing And Data Mining",
     "Database Management System",
     "Deep Learning",
+    "Digital Design",
     "Digital Electronics",
     "Digital Image Processing",
     "Digital Signal Processing",
-    "Discrete Mathematics And Design Of Algorihms",
+    "Discrete Mathematics And Design Of Algorihms Old",
     "Distributed Computing Systems",
     "Empirical Software Engineering",
-    "Entrepreneurship Development",
+    "Engineering Economics",
     "Ethical Hacking",
     "Fault Tolerant Systems",
-    "Financial And Cost Management",
-    "Fundamentals Of Information Technology",
+    "Financial And Cost Management Old",
+    "Fundamentals Of Information Technology Old",
+    "Fundamentals Of Management",
     "High Speed Networks",
-    "Indian Economy",
+    "Indianeconomy",
+    "Industrial Organization And Manegerial Economics",
     "Infomation Security",
     "Information Network Security",
     "Information Theory Coding",
@@ -69,14 +91,15 @@ export default function UploadQuestionPaper() {
     "Intrusion Detection And Information Warfare",
     "Java Programming",
     "Language And Social Media",
+    "Linear Intergated Circuits Old",
     "Machine Learning",
     "Macroeconomics",
     "Malware Analysis",
     "Mathematical Economics",
     "Microeconomics",
     "Microprocessors And Interfacing Old",
-    "Microprocessors And Its Applications",
-    "Microwave And Satellite Communication",
+    "Microprocessors And Its Applications Old",
+    "Microwave And Satellite Communication Old",
     "Mobile Communation",
     "Mobile Computing",
     "Money Banking And Finance",
@@ -85,8 +108,8 @@ export default function UploadQuestionPaper() {
     "Neural Network",
     "Nomadic Computing",
     "Object Oriented Software Engineering",
+    "Object Oriented Technology Old",
     "Operating System Design",
-    "Operating Systems",
     "Parallel Algorithm",
     "Parallel Computer Architecture",
     "Pattern Recognition",
@@ -108,23 +131,6 @@ export default function UploadQuestionPaper() {
     "Wireless Mobile Computing"
   ];
 
-  // List of all branches
-  const branches = [
-    "Chemical Engineering",
-    "Mathematics and Computing",
-    "Engineering Physics",
-    "Biotechnology",
-    "Civil Engineering",
-    "Computer Science & Engineering",
-    "Electronics and Communication Engineering",
-    "Electrical Engineering",
-    "Environmental Engineering",
-    "Information Technology",
-    "Mechanical Engineering",
-    "Production and Industrial Engineering",
-    "Mechanical Engineering with Specialization in Automotive Engineering",
-    "Software Engineering"
-  ];
 
   // useForm hook with our typed form data.
   const {
@@ -194,41 +200,46 @@ export default function UploadQuestionPaper() {
     setSubmitting(true);
     
     try {
-      // Append additional field before sending
-      data.randomData = "randomString";
-
       // Create FormData object for file upload
       const formData = new FormData();
       
-      // Append all form fields
-      Object.entries(data).forEach(([key, value]) => {
-        if (key === 'pdfFile') {
-          if (value[0]) {
-            formData.append(key, value[0]);
-          }
-        } else {
-          formData.append(key, value as string);
-        }
-      });
+          // Append all form fields
+          formData.append('subject', data.subject);
+          formData.append('course_code', data.courseCode);
+          formData.append('year', data.year);
+          formData.append('exam_type', data.examType);
+          formData.append('month', data.month);
+          formData.append('branch', data.course);
+    
+    // Append the file if it exists
+    if (data.pdfFile && data.pdfFile[0]) {
+      formData.append('pdf_file', data.pdfFile[0]);
+    }
+
 
 
       const response = await axios.post(
-        `api/upload_pyq_paper`, {
+        `api/upload_pyq_paper`, formData,{
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
       
-      
-      // Show success notification or handle success case
-      alert("Question paper uploaded successfully!");
+      toast.success("Question paper uploaded successfully!");
     } catch (error) {
-      // Show error notification
-      alert("Failed to upload question paper. Please try again.");
+  
+      
+      // Log more details about the error
+      if (axios.isAxiosError(error) && error.response) {
+        toast.error(`Failed: ${error.response.data.response || "Failed to upload question paper."}`);
+      } else {
+        toast.error("Failed to upload question paper. Please try again.");
+      }
     } finally {
       setSubmitting(false);
       setIsModalOpen(false);
     }
+  
   };
 
   const currentYear = new Date().getFullYear();
@@ -239,7 +250,7 @@ export default function UploadQuestionPaper() {
     "July", "August", "September", "October", "November", "December"
   ];
   
-  const examTypeOptions = ["Mid Semester", "End Semester", "Supplement", "Quiz"];
+  const examTypeOptions = ["Mid", "End", "Supp"];
 
   return (
     <>
@@ -382,16 +393,31 @@ export default function UploadQuestionPaper() {
                     </span>
                   )}
                 </div>
-
                 <div>
                   <label className="block text-sm font-medium text-white mb-1">
                     Course Code
                   </label>
                   <input
                     type="text"
-                    placeholder="e.g. CS101"
+                    placeholder="e.g. CO301"
                     className="w-full border rounded p-2 text-white bg-[#2f2f2f] border-gray-600 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all outline-none"
-                    {...register("courseCode", { required: "Course Code is required" })}
+                    {...register("courseCode", {
+                      required: "Course Code is required",
+                      pattern: {
+                        value: /^[A-Z]{2,3}\d{3}$/,
+                        message:
+                          "Invalid course code format. Should contain 2-3 letters(in caps) followed by 3 numbers with no spaces",
+                      },
+                      setValueAs: (value) => {
+                        // Remove any character that is not a letter or a number
+                        let processedValue = value.replace(/[^a-zA-Z0-9]/g, "");
+                        // Convert to uppercase for auto capitalization
+                        processedValue = processedValue.toUpperCase();
+                        // Insert a space between the letter(s) and number(s) if not already present
+                        processedValue = processedValue.replace(/([A-Z]+)([0-9]+)/, "$1 $2");
+                        return processedValue;
+                      },
+                    })}
                     disabled={submitting}
                   />
                   {errors.courseCode && (
@@ -400,7 +426,6 @@ export default function UploadQuestionPaper() {
                     </span>
                   )}
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className="block text-sm font-medium text-white mb-1">
