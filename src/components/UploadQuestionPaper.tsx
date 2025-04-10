@@ -406,7 +406,7 @@ export default function UploadQuestionPaper() {
                       pattern: {
                         value: /^[A-Z]{2,3}[0-9]{3}$/,
                         message:
-                          "Invalid course code format. Should contain 2-3 letters followed by 3 numbers without any space",
+                          "Invalid course code format. Should contain 2-3 letters followed by 3 numbers with no spaces",
                       },
                       setValueAs: (value) => {
                         // Remove any character that is not a letter or a number
