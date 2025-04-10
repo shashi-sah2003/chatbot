@@ -408,15 +408,6 @@ export default function UploadQuestionPaper() {
                         message:
                           "Invalid course code format. Should contain 2-3 letters(in caps) followed by 3 numbers with no spaces",
                       },
-                      setValueAs: (value) => {
-                        // Remove any character that is not a letter or a number
-                        let processedValue = value.replace(/[^a-zA-Z0-9]/g, "");
-                        // Convert to uppercase for auto capitalization
-                        processedValue = processedValue.toUpperCase();
-                        // Insert a space between the letter(s) and number(s) if not already present
-                        processedValue = processedValue.replace(/([A-Z]+)([0-9]+)/, "$1 $2");
-                        return processedValue;
-                      },
                     })}
                     disabled={submitting}
                   />
