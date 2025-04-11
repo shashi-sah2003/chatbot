@@ -13,8 +13,37 @@ function getLinkRanges(text: string): { start: number; end: number }[] {
   return ranges;
 }
 
+function getWordEndPositions(text: string, offset: number): number[] {
+  const ends: number[] = [];
+  const regex = /\S+\s*/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    ends.push(offset + match.index + match[0].length);
+  }
+  return ends;
+}
+
+function getStreamPositions(text: string, linkRanges: { start: number; end: number }[]): number[] {
+  const positions: number[] = [];
+  let prevEnd = 0;
+  for (const range of linkRanges) {
+    const beforeLink = text.slice(prevEnd, range.start);
+    const wordEnds = getWordEndPositions(beforeLink, prevEnd);
+    positions.push(...wordEnds);
+    positions.push(range.end);
+    prevEnd = range.end;
+  }
+  const afterLastLink = text.slice(prevEnd);
+  const remainingWordEnds = getWordEndPositions(afterLastLink, prevEnd);
+  positions.push(...remainingWordEnds);
+  if (positions.length === 0 || positions[positions.length - 1] < text.length) {
+    positions.push(text.length);
+  }
+  return positions;
+}
+
 /**
- * Streams the fullText, displaying only labels during animation and adding full link syntax at once.
+ * Streams the fullText, displaying text word by word and adding full link syntax at once.
  * @param fullText - The complete markdown string to stream.
  * @param onUpdate - Callback to update the displayed text.
  * @param speed - Interval (in milliseconds) between updates.
@@ -30,29 +59,23 @@ export const streamChat = (
   shouldContinue: () => boolean = () => true
 ): NodeJS.Timeout => {
   const linkRanges = getLinkRanges(fullText);
-  let index = 0;
+  const positions = getStreamPositions(fullText, linkRanges);
+  let posIndex = 0;
+
   const intervalId = setInterval(() => {
     if (!shouldContinue()) {
       clearInterval(intervalId);
       return;
     }
-
-    // Check if the current index is the start of a link
-    const currentLink = linkRanges.find((range) => range.start === index);
-    if (currentLink) {
-      // If at the start of a link, jump to the end to include the full link
-      index = currentLink.end;
+    if (posIndex < positions.length) {
+      const index = positions[posIndex];
+      onUpdate(fullText.slice(0, index));
+      posIndex++;
     } else {
-      // Otherwise, increment by one character
-      index++;
-    }
-
-    onUpdate(fullText.slice(0, index));
-
-    if (index >= fullText.length) {
       clearInterval(intervalId);
       if (onComplete) onComplete();
     }
   }, speed);
+
   return intervalId;
 };

@@ -18,22 +18,13 @@ export const moderateMessage = (message: string) => {
         isToast: true
       };
     }
-
-        
-    // Check for offensive language (basic filter)
-    const offensiveWords = ["damn", "shit", "fuck", "asshole", "bitch", "crap"];
-    if (offensiveWords.some(word => query.toLowerCase().includes(word))) {
-      return {
-        shouldBlock: true,
-        response: "I cannot process requests containing inappropriate language. Please be respectful."
-      };
-    }
+ 
       // Check for pronouns (which suggest context-dependent queries)
       const pronounRegex = /\b(they|them|their|he|him|his|she|her|hers|these|those)\b/i;
       if (pronounRegex.test(query)) {
         return {
           shouldBlock: true,
-          response: "I cannot answer queries with pronouns as I don't maintain conversation context. Please provide a complete question with specific details."
+          response: "I don't maintain conversation context. Please provide a complete question with specific details."
         };
       }
     
@@ -58,10 +49,6 @@ export const moderateMessage = (message: string) => {
         response: "Your query is too generic. Please provide more details about what you're looking for."
       };
     }
-    
-    
-    
-  
     
     // Check for repetitive characters/gibberish
     const repetitiveCharsRegex = /(.)\1{4,}/;
