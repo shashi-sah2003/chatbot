@@ -108,7 +108,7 @@ const ChatBubble = ({
           <div className="ml-2 flex-1 w-full">
             <div className="chat-bubble bg-[#212121] text-white text-sm p-2 rounded-xl max-w-[95%] break-words">
               {!isFullHTML && displayText && (
-                <MarkdownRenderer content={displayText} speed={20}/>
+                <MarkdownRenderer content={displayText} speed={25}/>
               )}
               {isLoading && <AILoading />}
             </div>

@@ -1,5 +1,49 @@
 /**
- * Streams the fullText by tokens (words and preserved whitespace), ensuring that markdown links are streamed as a whole.
+ * Finds the start and end positions of all markdown links in the text.
+ * @param text - The markdown string to parse.
+ * @returns An array of objects with start and end indices of each link.
+ */
+function getLinkRanges(text: string): { start: number; end: number }[] {
+  const regex = /\[([^\]]+)\]\(([^)]+)\)/g; // Matches [label](url)
+  const ranges = [];
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    ranges.push({ start: match.index, end: regex.lastIndex });
+  }
+  return ranges;
+}
+
+function getWordEndPositions(text: string, offset: number): number[] {
+  const ends: number[] = [];
+  const regex = /\S+\s*/g;
+  let match;
+  while ((match = regex.exec(text)) !== null) {
+    ends.push(offset + match.index + match[0].length);
+  }
+  return ends;
+}
+
+function getStreamPositions(text: string, linkRanges: { start: number; end: number }[]): number[] {
+  const positions: number[] = [];
+  let prevEnd = 0;
+  for (const range of linkRanges) {
+    const beforeLink = text.slice(prevEnd, range.start);
+    const wordEnds = getWordEndPositions(beforeLink, prevEnd);
+    positions.push(...wordEnds);
+    positions.push(range.end);
+    prevEnd = range.end;
+  }
+  const afterLastLink = text.slice(prevEnd);
+  const remainingWordEnds = getWordEndPositions(afterLastLink, prevEnd);
+  positions.push(...remainingWordEnds);
+  if (positions.length === 0 || positions[positions.length - 1] < text.length) {
+    positions.push(text.length);
+  }
+  return positions;
+}
+
+/**
+ * Streams the fullText, displaying text word by word and adding full link syntax at once.
  * @param fullText - The complete markdown string to stream.
  * @param onUpdate - Callback to update the displayed text.
  * @param speed - Interval (in milliseconds) between updates.
@@ -10,55 +54,28 @@
 export const streamChat = (
   fullText: string,
   onUpdate: (partialText: string) => void,
-  speed: number = 20,
+  speed: number = 10,
   onComplete?: () => void,
   shouldContinue: () => boolean = () => true
 ): NodeJS.Timeout => {
-  // Regex to capture full markdown links
-  const linkRegex = /(\[[^\]]+\]\([^)]+\))/g;
-  let tokens: string[] = [];
-  let lastIndex = 0;
-  let match: RegExpExecArray | null;
+  const linkRanges = getLinkRanges(fullText);
+  const positions = getStreamPositions(fullText, linkRanges);
+  let posIndex = 0;
 
-  // Process the markdown text to separate plain tokens from link tokens.
-  while ((match = linkRegex.exec(fullText)) !== null) {
-    // Extract plain text before the link, if any.
-    if (match.index > lastIndex) {
-      const plainText = fullText.slice(lastIndex, match.index);
-      // Split plain text into tokens (words and whitespace)
-      const plainTokens = plainText.split(/(\s+)/).filter(token => token !== "");
-      tokens.push(...plainTokens);
-    }
-    // Add the full link as a single token.
-    tokens.push(match[0]);
-    lastIndex = linkRegex.lastIndex;
-  }
-  
-  // Process any trailing plain text after the last link.
-  if (lastIndex < fullText.length) {
-    const plainText = fullText.slice(lastIndex);
-    const plainTokens = plainText.split(/(\s+)/).filter(token => token !== "");
-    tokens.push(...plainTokens);
-  }
-
-  // Begin streaming tokens one by one.
-  let index = 0;
-  let accumulatedText = "";
   const intervalId = setInterval(() => {
     if (!shouldContinue()) {
       clearInterval(intervalId);
       return;
     }
-    if (index < tokens.length) {
-      // Append the next token (whether it's a word, whitespace, or a complete link).
-      accumulatedText += tokens[index];
-      index++;
-      onUpdate(accumulatedText);
+    if (posIndex < positions.length) {
+      const index = positions[posIndex];
+      onUpdate(fullText.slice(0, index));
+      posIndex++;
     } else {
       clearInterval(intervalId);
       if (onComplete) onComplete();
     }
   }, speed);
-  
+
   return intervalId;
 };
