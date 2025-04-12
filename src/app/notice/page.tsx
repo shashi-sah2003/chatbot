@@ -151,7 +151,7 @@ export default function Notices() {
     '/api/chat/information',
     fetchNotifications,
     {
-      revalidateOnFocus: true,
+      revalidateOnFocus: false,
       shouldRetryOnError: true,
       dedupingInterval: 60000, // 1 minute expiry
     }
