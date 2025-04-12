@@ -159,7 +159,7 @@ export default function UploadQuestionPaper() {
   // Ref for handling outside clicks
   const subjectWrapperRef = useRef<HTMLDivElement>(null);
   const branchWrapperRef = useRef<HTMLDivElement>(null);
-  
+
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -168,7 +168,7 @@ export default function UploadQuestionPaper() {
       ) {
         setShowSubjectSuggestions(false);
       }
-      
+
       if (
         branchWrapperRef.current &&
         !branchWrapperRef.current.contains(event.target as Node)
@@ -198,58 +198,96 @@ export default function UploadQuestionPaper() {
 
   const onSubmit: SubmitHandler<FormData> = async (data) => {
     setSubmitting(true);
-    
+
     try {
       // Create FormData object for file upload
       const formData = new FormData();
-      
-          // Append all form fields
-          formData.append('subject', data.subject);
-          formData.append('course_code', data.courseCode);
-          formData.append('year', data.year);
-          formData.append('exam_type', data.examType);
-          formData.append('month', data.month);
-          formData.append('branch', data.course);
-    
-    // Append the file if it exists
-    if (data.pdfFile && data.pdfFile[0]) {
-      formData.append('pdf_file', data.pdfFile[0]);
-    }
+
+      // Append all form fields
+      formData.append('subject', data.subject);
+      formData.append('course_code', data.courseCode);
+      formData.append('year', data.year);
+      formData.append('exam_type', data.examType);
+      formData.append('month', data.month);
+      formData.append('branch', data.course);
+
+      // Append the file if it exists
+      if (data.pdfFile && data.pdfFile[0]) {
+        formData.append('pdf_file', data.pdfFile[0]);
+      }
 
 
 
       const response = await axios.post(
-        `api/upload_pyq_paper`, formData,{
+        `api/upload_pyq_paper`, formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
       });
-      
+
       toast.success("Question paper uploaded successfully!");
+      setIsModalOpen(false);
     } catch (error) {
-  
-      
+
       // Log more details about the error
       if (axios.isAxiosError(error) && error.response) {
-        toast.error(`Failed: ${error.response.data.response || "Failed to upload question paper."}`);
+        const statusCode = error.response.status;
+        const errorData = error.response.data;
+
+        switch (statusCode) {
+          case 400:
+            if (errorData.error_type === 'FILE_SIZE_ERROR') {
+              toast.error("File size should be less than 5MB");
+            } else if (errorData.error_type === 'FILE_TYPE_ERROR') {
+              toast.error("Only PDF files are accepted");
+            } else if (errorData.error_type === 'INVALID_EXAM_TYPE') {
+              toast.error("Invalid exam type. Must be Mid/End/Supp");
+            } else if (errorData.error_type === 'VERIFICATION_ERROR') {
+              toast.error("Paper verification failed. Please check the details.");
+            } else if (errorData.response) {
+              // For verification checks like "Provide valid year details"
+              toast.error(errorData.response);
+            } else {
+              toast.error("Invalid request. Please check your inputs.");
+            }
+            break;
+
+          case 409:
+            toast.error("This paper already exists in the database");
+            break;
+          case 499:
+            // Handle client disconnection
+            toast.error("Connection lost. Please try again.");
+            break;
+          case 500:
+            // Handle server errors
+            if (errorData.error_type === 'UPLOAD_ERROR') {
+              toast.error("Couldn't verify the paper right now due to some problem");
+            } else {
+              toast.error("Server error. Please try again later.");
+            }
+            break;
+
+          default:
+            toast.error("Failed to upload question paper. Please try again.");
+        }
       } else {
         toast.error("Failed to upload question paper. Please try again.");
       }
     } finally {
       setSubmitting(false);
-      setIsModalOpen(false);
     }
-  
+
   };
 
   const currentYear = new Date().getFullYear();
   const yearOptions = Array.from({ length: 8 }, (_, i) => currentYear - i);
-  
+
   const monthOptions = [
-    "January", "February", "March", "April", "May", "June", 
+    "January", "February", "March", "April", "May", "June",
     "July", "August", "September", "October", "November", "December"
   ];
-  
+
   const examTypeOptions = ["Mid", "End", "Supp"];
 
   return (
@@ -259,18 +297,18 @@ export default function UploadQuestionPaper() {
           className="px-6 py-2.5 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white font-medium rounded-md shadow-lg hover:shadow-indigo-500/30 transition-all duration-300 hover:scale-105 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 flex items-center justify-center mx-auto group"
           onClick={() => setIsModalOpen(true)}
         >
-          <svg 
-            xmlns="http://www.w3.org/2000/svg" 
-            className="h-5 w-5 mr-2 group-hover:translate-y-[-2px] transition-transform duration-300" 
-            fill="none" 
-            viewBox="0 0 24 24" 
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-5 w-5 mr-2 group-hover:translate-y-[-2px] transition-transform duration-300"
+            fill="none"
+            viewBox="0 0 24 24"
             stroke="currentColor"
           >
-            <path 
-              strokeLinecap="round" 
-              strokeLinejoin="round" 
-              strokeWidth={2} 
-              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" 
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"
             />
           </svg>
           Upload Question Paper
@@ -298,7 +336,7 @@ export default function UploadQuestionPaper() {
                 <h2 className="text-xl font-semibold text-white">
                   Upload Question Paper
                 </h2>
-                <button 
+                <button
                   onClick={() => !submitting && setIsModalOpen(false)}
                   className="text-gray-400 hover:text-white transition-colors"
                   disabled={submitting}
@@ -308,7 +346,7 @@ export default function UploadQuestionPaper() {
                   </svg>
                 </button>
               </div>
-              
+
               <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                 {/* Subject Field with Filterable Dropdown */}
                 <div className="relative" ref={subjectWrapperRef}>
