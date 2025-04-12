@@ -1,8 +1,7 @@
 "use client";
-import React, { useEffect, useState, useMemo, useCallback } from "react";
-import axios from "axios";
+import React, { useState, useMemo, useCallback } from "react";
 import Loader from "@/components/Loader";
-import { motion, AnimatePresence } from "framer-motion";
+import { AnimatePresence } from "framer-motion";
 import {
   Accordion,
   AccordionSummary,
@@ -16,8 +15,8 @@ import {
   Paper,
   InputAdornment,
   TextField,
-  Tooltip,
 } from "@mui/material";
+import useSWR from "swr";
 import { styled, alpha } from "@mui/material/styles";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import SearchIcon from "@mui/icons-material/Search";
@@ -27,6 +26,7 @@ import CircleIcon from "@mui/icons-material/Circle";
 import { Box } from "@mui/material";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import api from "@/utils/axiosConfig";
 
 // Enhanced styled components
 const StyledAccordion = styled(Accordion)(({ theme }) => ({
@@ -112,7 +112,7 @@ interface Notification {
 function useDebounce<T>(value: T, delay: number): T {
   const [debouncedValue, setDebouncedValue] = useState<T>(value);
 
-  useEffect(() => {
+  React.useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedValue(value);
     }, delay);
@@ -123,40 +123,39 @@ function useDebounce<T>(value: T, delay: number): T {
   return debouncedValue;
 }
 
+// Fetcher function for SWR
+const fetchNotifications = async () => {
+  const response = await api.get("/api/chat/information", {
+    headers: {
+      "x-vercel-secret": process.env.NEXT_PUBLIC_VERCEL_SECRET,
+    }
+  });
+
+  if (response.data.response && Array.isArray(response.data.response)) {
+    return response.data.response;
+  } else {
+    throw new Error("Invalid data format received from server");
+  }
+};
+
 export default function Notices() {
-  const [notifications, setNotifications] = useState<Notification[]>([]);
-  const [error, setError] = useState("");
   const [expanded, setExpanded] = useState<string | false>(false);
   const [filter, setFilter] = useState("All");
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const baseUrl = process.env.NEXT_PUBLIC_BASE_URL;
 
   // Debounced search term to reduce filtering frequency
   const debouncedSearchTerm = useDebounce(searchTerm, 300);
-
-  useEffect(() => {
-    const fetchNotifications = async () => {
-      setLoading(true);
-      try {
-        const response = await axios.get("/api/chat/information");
-        if (response.data.response && Array.isArray(response.data.response)) {
-          setNotifications(response.data.response);
-          setError("");
-        } else {
-          setNotifications([]);
-          setError("Invalid data format received from server");
-        }
-      } catch (err) {
-        setNotifications([]);
-        setError("Failed to load notifications. Please try again.");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchNotifications();
-  }, [baseUrl]);
+  
+  // SWR hook to fetch notifications
+  const { data: notifications = [], error, isLoading } = useSWR<Notification[]>(
+    '/api/chat/information',
+    fetchNotifications,
+    {
+      revalidateOnFocus: true,
+      shouldRetryOnError: true,
+      dedupingInterval: 60000, // 1 minute expiry
+    }
+  );
 
   const handleChange = useCallback(
     (panelIndex: number) =>
@@ -205,8 +204,6 @@ export default function Notices() {
             .includes(debouncedSearchTerm.toLowerCase())
       );
   }, [notifications, filter, debouncedSearchTerm]);
-
-  
 
   return (
     <div className="flex flex-col h-[89vh] w-full max-w-screen-md pb-4 mx-auto bg-[#212121] px-4">
@@ -313,7 +310,7 @@ export default function Notices() {
         <EmptyStateContainer elevation={0}>
           <ErrorOutlineIcon sx={{ color: "#f44336", fontSize: 40, mb: 2 }} />
           <Typography variant="body1" sx={{ color: "#f44336" }}>
-            {error}
+            {error.message || "Failed to load notifications. Please try again."}
           </Typography>
           <Typography
             variant="body2"
@@ -324,18 +321,15 @@ export default function Notices() {
             Please try again later.
           </Typography>
         </EmptyStateContainer>
-      ) : loading ? (
+      ) : isLoading ? (
         <div className="items-center justify-center">
           {/* Loader Overlay */}
           <AnimatePresence>
-            {loading && (
-              <Loader />
-            )}
+            {isLoading && <Loader />}
           </AnimatePresence>
         </div>
       ) : filteredNotifications.length > 0 ? (
         <div className="overflow-y-auto" style={{ flex: 1 }}>
-          
           {filteredNotifications.map(({ notification, index }) => {
             const panelId = `panel${index}`;
             const categoryColor = getCategoryColor(notification.category);
@@ -381,9 +375,7 @@ export default function Notices() {
                       flex: 1,
                       minWidth: 0,
                       pr: 2,
-                      
                     }}
-                    
                   >
                     <NotificationDot sx={{ color: categoryColor }} />
                     <Typography
@@ -398,7 +390,7 @@ export default function Notices() {
                       {categoryLabel}
                     </Typography>
                   </Box>
-            
+
                   {/* title */}
                   <Typography
                     variant="subtitle1"
@@ -414,7 +406,7 @@ export default function Notices() {
                     {notification.title}
                   </Typography>
                 </AccordionSummary>
-            
+
                 <AccordionDetails
                   sx={{
                     padding: "8px 16px 16px 16px",
@@ -459,21 +451,22 @@ export default function Notices() {
                 </AccordionDetails>
               </StyledAccordion>
             );
-            
           })}
         </div>
-      ) : (!loading &&
-        <EmptyStateContainer elevation={0}>
-          <ErrorOutlineIcon sx={{ color: "#666", fontSize: 40, mb: 2 }} />
-          <Typography variant="body1" sx={{ color: "#f5f5f5" }}>
-            No notifications found
-          </Typography>
-          <Typography variant="body2" sx={{ color: "#999", mt: 1 }}>
-            {searchTerm
-              ? "Try changing your search or filters"
-              : "You're all caught up!"}
-          </Typography>
-        </EmptyStateContainer>
+      ) : (
+        !isLoading && (
+          <EmptyStateContainer elevation={0}>
+            <ErrorOutlineIcon sx={{ color: "#666", fontSize: 40, mb: 2 }} />
+            <Typography variant="body1" sx={{ color: "#f5f5f5" }}>
+              No notifications found
+            </Typography>
+            <Typography variant="body2" sx={{ color: "#999", mt: 1 }}>
+              {searchTerm
+                ? "Try changing your search or filters"
+                : "You're all caught up!"}
+            </Typography>
+          </EmptyStateContainer>
+        )
       )}
     </div>
   );
