@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import ChatInput from "@/components/ChatInput";
 import ChatBubble from "@/components/ChatBubble";
 import { useScrollToBottom } from "@/components/useScrollToBottom";
@@ -8,6 +7,8 @@ import { FeedbackProvider } from "@/components/FeedbackContext";
 import FeedbackDialog from "@/components/FeedbackDialog";
 import { StreamingContext } from "@/components/StreamingContext";
 import UploadQuestionPaper from "@/components/UploadQuestionPaper";
+import api from "@/utils/axiosConfig";
+
 
 // Define a tuple type for each paper.
 // Adjust the types if you have more specific information.
@@ -78,9 +79,14 @@ export default function ChatPage() {
     ]);
 
     try {
-      const response = await axios.post<PyqPapersResponse>(
+      const response = await api.post<PyqPapersResponse>(
         '/api/pyq_papers',
-        { query: userQuery }
+        { query: userQuery },
+        {
+          headers: {
+            "x-vercel-secret": process.env.NEXT_PUBLIC_VERCEL_SECRET,
+          },
+        }
       );
       let papersArray: Paper[] | null = null;
 

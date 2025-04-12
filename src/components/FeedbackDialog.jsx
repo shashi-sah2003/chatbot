@@ -1,13 +1,13 @@
 "use client";
 import React, { useContext, useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import axios from "axios";
 import { FeedbackContext } from "./FeedbackContext";
 import { Button } from "./ui/button";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
 import Loader from "@/components/Loader";
 import PageTransition from "@/components/PageTransition";
+import api from "@/utils/axiosConfig";
 
 const FeedbackDialog = () => {
   const { feedbackData, closeFeedback } = useContext(FeedbackContext);
@@ -33,7 +33,12 @@ const FeedbackDialog = () => {
   const onSubmit = async (data) => {
     try {
       setIsSubmitting(true);
-      const response = await axios.post('api/feedback', data);
+      const response = await api.post('api/feedback',
+        data, {
+        headers: {
+          "x-vercel-secret": process.env.NEXT_PUBLIC_VERCEL_SECRET,
+        },
+      });
       if (response.status === 200) {
         // Show a toast based on sentiment if available
         if (feedbackData.sentiment === "like") {

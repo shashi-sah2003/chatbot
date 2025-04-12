@@ -4,6 +4,7 @@ import { useForm, SubmitHandler } from "react-hook-form";
 import axios from "axios";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
+import api from "@/utils/axiosConfig";
 
 interface FormData {
   subject: string;
@@ -218,10 +219,11 @@ export default function UploadQuestionPaper() {
 
 
 
-      const response = await axios.post(
+      const response = await api.post(
         `api/upload_pyq_paper`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'x-vercel-secret': process.env.NEXT_PUBLIC_VERCEL_SECRET,
         }
       });
 
@@ -245,7 +247,6 @@ export default function UploadQuestionPaper() {
             } else if (errorData.error_type === 'VERIFICATION_ERROR') {
               toast.error("Paper verification failed. Please check the details.");
             } else if (errorData.response) {
-              // For verification checks like "Provide valid year details"
               toast.error(errorData.response);
             } else {
               toast.error("Invalid request. Please check your inputs.");
