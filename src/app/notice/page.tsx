@@ -153,7 +153,7 @@ export default function Notices() {
     {
       revalidateOnFocus: false,
       shouldRetryOnError: true,
-      dedupingInterval: 60000, // 1 minute expiry
+      dedupingInterval: 180000, // 3 minutes expiry
     }
   );
 
