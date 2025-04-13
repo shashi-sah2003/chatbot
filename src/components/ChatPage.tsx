@@ -79,6 +79,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
           )
         );
         setIsStreaming(false); // Re-enable input after response
+        setIsStreamingComplete(true); // Ensure streaming is marked as complete
       }, 1000);
     } else {
       // Proceed to backend for non-moderated queries
@@ -90,28 +91,58 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
               "x-vercel-secret": process.env.NEXT_PUBLIC_VERCEL_SECRET,
             },
           });
-        const fullText =
-          typeof response.data.response === "string" && response.data.response.trim().length > 0
-            ? removeNoneLastName(response.data.response)
-            : sampleMarkdown;
-        setChatHistory((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMsgId
-              ? { ...msg, message: fullText, fullText, isLoading: false, stream: false }
-              : msg
-          )
-        );
-        setIsStreaming(false);
+        
+        
+        // Handle different response types more robustly
+        let fullText = sampleMarkdown;
+        if (response.data && response.data.response !== undefined) {
+          if (typeof response.data.response === "string") {
+            fullText = response.data.response.trim().length > 0 
+              ? removeNoneLastName(response.data.response) 
+              : sampleMarkdown;
+          } else if (response.data.response !== null) {
+            // If response is not string but is a valid data object/array, convert to string
+            try {
+              fullText = JSON.stringify(response.data.response);
+            } catch (e) {
+              fullText = sampleMarkdown;
+            }
+          }
+        }
+        
+        // Update with a small delay to ensure state has settled
+        setTimeout(() => {
+          setChatHistory((prev) => {
+            // Check if the message still exists in the chat history
+            const messageExists = prev.some(msg => msg.id === aiMsgId);
+            if (!messageExists) {
+              return prev;
+            }
+            
+            return prev.map((msg) =>
+              msg.id === aiMsgId
+                ? { ...msg, message: fullText, fullText, isLoading: false, stream: false }
+                : msg
+            );
+          });
+          setIsStreaming(false);
+          setIsStreamingComplete(true);
+        }, 100);
       } catch (error) {
         const plainText = sampleMarkdown;
-        setChatHistory((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMsgId
-              ? { ...msg, message: plainText, fullText: sampleMarkdown, isLoading: false, stream: false }
-              : msg
-          )
-        );
-        setIsStreaming(false);
+        
+        // Use timeout to ensure consistent behavior
+        setTimeout(() => {
+          setChatHistory((prev) =>
+            prev.map((msg) =>
+              msg.id === aiMsgId
+                ? { ...msg, message: plainText, fullText: sampleMarkdown, isLoading: false, stream: false }
+                : msg
+            )
+          );
+          setIsStreaming(false);
+          setIsStreamingComplete(true);
+        }, 100);
       }
     }
   };

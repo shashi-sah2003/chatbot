@@ -9,7 +9,6 @@ import { StreamingContext } from "@/components/StreamingContext";
 import UploadQuestionPaper from "@/components/UploadQuestionPaper";
 import api from "@/utils/axiosConfig";
 
-
 // Define a tuple type for each paper.
 // Adjust the types if you have more specific information.
 type Paper = [unknown, unknown, string, string, string, string, string, string];
@@ -77,6 +76,8 @@ export default function ChatPage() {
       { id: userMsgId, sender: "user", message: userQuery },
       { id: aiMsgId, sender: "ai", message: "", isLoading: true, stream: true },
     ]);
+    
+    setIsStreaming(true);
 
     try {
       const response = await api.post<PyqPapersResponse>(
@@ -88,9 +89,10 @@ export default function ChatPage() {
           },
         }
       );
+            
       let papersArray: Paper[] | null = null;
 
-      // Check if the response is an array
+      // Enhanced response parsing with better error handling
       if (Array.isArray(response.data.response)) {
         papersArray = response.data.response;
       } else if (typeof response.data.response === "string") {
@@ -105,56 +107,80 @@ export default function ChatPage() {
         }
       }
 
-      if (papersArray) {
-        const markdownTable = generateMarkdownTable(papersArray);
-        // Update the AI message in chat history with the markdown table
-        setChatHistory((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMsgId
-              ? {
-                  ...msg,
-                  message: markdownTable,
-                  fullText: markdownTable,
-                  isLoading: false,
-                  stream: false,
-                }
-              : msg
-          )
-        );
-      } else {
-        // Otherwise, assume the response is a plain text message
-        let fullText = response.data.response;
-        if (!fullText || typeof fullText !== "string") {
-          fullText = sampleMarkdown;
+      // Using setTimeout for consistent state updates
+      setTimeout(() => {
+        if (papersArray) {
+          const markdownTable = generateMarkdownTable(papersArray);
+          // Update the AI message in chat history with the markdown table
+          setChatHistory((prev) => {
+            // Check if message still exists
+            const messageExists = prev.some(msg => msg.id === aiMsgId);
+            if (!messageExists) {
+              return prev;
+            }
+            
+            return prev.map((msg) =>
+              msg.id === aiMsgId
+                ? {
+                    ...msg,
+                    message: markdownTable,
+                    fullText: markdownTable,
+                    isLoading: false,
+                    stream: false,
+                  }
+                : msg
+            );
+          });
+        } else {
+          // Otherwise, assume the response is a plain text message
+          let fullText = response.data.response;
+          if (!fullText || typeof fullText !== "string") {
+            fullText = sampleMarkdown;
+          }
+          setChatHistory((prev) => {
+            // Check if message still exists
+            const messageExists = prev.some(msg => msg.id === aiMsgId);
+            if (!messageExists) {
+              return prev;
+            }
+            
+            return prev.map((msg) =>
+              msg.id === aiMsgId
+                ? {
+                    ...msg,
+                    fullText,
+                    isLoading: false,
+                    stream: false,
+                    message: fullText,
+                  }
+                : msg
+            );
+          });
         }
+        
+        setIsStreaming(false);
+        setIsStreamingComplete(true);
+      }, 100);
+    } catch (error) {
+      
+      setTimeout(() => {
         setChatHistory((prev) =>
           prev.map((msg) =>
             msg.id === aiMsgId
               ? {
                   ...msg,
-                  fullText,
+                  message: sampleMarkdown,
+                  fullText: sampleMarkdown,
                   isLoading: false,
                   stream: false,
-                  message: fullText,
                 }
               : msg
           )
         );
-      }
-    } catch (error) {
-      setChatHistory((prev) =>
-        prev.map((msg) =>
-          msg.id === aiMsgId
-            ? {
-                ...msg,
-                message: sampleMarkdown,
-                fullText: sampleMarkdown,
-                isLoading: false,
-                stream: false,
-              }
-            : msg
-        )
-      );
+        
+        setIsStreaming(false);
+        setIsStreamingComplete(true);
+      }, 100);
     }
   };
 
