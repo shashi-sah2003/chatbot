@@ -28,15 +28,7 @@ const routeSuggestions = {
         "What was the pass percentage?",
     ],
 
-    "/pyq_solutions": [
-        "Find PYQ solutions for Data Structures and Algorithms",
-        "Show solutions for 2022 OOP exam paper",
-        "How to solve question 3 from COE-253 2021 paper?",
-        "Explain solution for Computer Networks 2019 paper",
-        "Find solutions for Digital Electronics mid-term papers",
-        "Show approach for solving Algorithm Design questions",
-        "What are common question patterns in Database papers?",
-        "Find solutions for Machine Learning end-term papers"
+    "/pyq": [
     ],
 
 };

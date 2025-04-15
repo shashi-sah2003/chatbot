@@ -41,7 +41,7 @@ const menuOptions: MenuOption[] = [
     id: 3,
     label: "PYQ's",
     description: "get previous year papers",
-    path: "/pyq_solutions",
+    path: "/pyq",
   },
 ];
 
