@@ -14,8 +14,8 @@ const routeSuggestions = {
         "How many students scored above 9 CGPA?",
         "Show me the top performers",
         "Show me the top performers in COE branch",
-        "What was the highest CGPA in COE branch?",
-        "What was the pass percentage?",
+        "What is the highest CGPA in COE branch?",
+        "What is the passing percentage?",
     ],
 
     "/result_27": [
@@ -29,6 +29,11 @@ const routeSuggestions = {
     ],
 
     "/pyq": [
+        "pyq of 'subject_name'",
+        "latest pyq of 'subject_name'",
+        "pyq of mid sem of 'subject_name'",
+        "pyq of end sem of 'subject_name'",
+        "pyq of specific branch",
     ],
 
 };
