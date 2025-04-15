@@ -2,11 +2,11 @@
 
 A Next.js-powered conversational AI interface designed specifically for DTU (Delhi Technological University) students and faculty.
 
-## 🛠️ Installation
+## 🛠️ Getting Started
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/shashi-sah2003/chatbot.git
+git clone [repository-url]
 cd chatbot
 ```
 
@@ -23,10 +23,10 @@ Start the development server:
 npm run dev
 ```
 
-## Contributing
+## 📝 License
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/yourFeatureName`)
-3. Commit your changes (`git commit -m 'Add some yourFeature'`)
-4. Push to the branch (`git push origin feature/yourFeature`)
-5. Open a Pull Request
+This project is licensed under the MIT License - see the LICENSE file for details.
+
+## 👥 Contributing
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) for details on our code of conduct and the process for submitting pull requests.

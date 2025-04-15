@@ -129,7 +129,9 @@ export default function UploadQuestionPaper() {
     "Theory Of Computation",
     "Water Engineering",
     "Web Technology",
-    "Wireless Mobile Computing"
+    "Wireless Mobile Computing",
+    "Discrete Structures",
+    "Data Structures"
   ];
 
 
