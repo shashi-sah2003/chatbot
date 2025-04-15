@@ -28,10 +28,12 @@ export interface ModeratedResponse {
 interface ChatInputProps {
   onSubmit: (query: string, moderatedResponse?: ModeratedResponse) => Promise<void>;
   conversationOpen?: boolean;
+  inputValue?: string;
+  setInputValue?: (value: string) => void;
 }
 
-const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
-  const [prompt, setPrompt] = useState("");
+const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInputValue }: ChatInputProps) => {
+  const [prompt, setPrompt] = useState(inputValue);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isStreaming, isStreamingComplete, setIsStreaming, setIsStreamingComplete } = useStreaming();
   const [submitClicked, setSubmitClicked] = useState(false);
@@ -52,6 +54,13 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
         textareaRef.current.scrollHeight > maxHeight ? "auto" : "hidden";
     }
   };
+
+  useEffect(() => {
+    if (inputValue) {
+      setPrompt(inputValue);
+      setTimeout(autoResize, 0);
+    }
+  }, [inputValue]);
 
   useLayoutEffect(() => {
     autoResize();
@@ -157,7 +166,7 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
             className="w-full bg-transparent rounded-2xl text-white placeholder:text-zinc-400 resize-none border-2 border-zinc-600 outline-none focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 pb-12 shadow-lg"
             style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
             value={prompt}
-            onChange={(e) => {
+            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
               const newValue = e.target.value;
               if (newValue.length <= 200) {
                 setPrompt(newValue);
@@ -200,7 +209,7 @@ const ChatInput = ({ onSubmit, conversationOpen = false }: ChatInputProps) => {
 
       {!conversationOpen && (
         <p className="flex justify-center items-center text-center text-slate-300 text-xs mt-2 font-medium tracking-wide">
-          DTU-ChatBot can make mistakes. Check important info.
+          DTU-ChatBot can make mistakes.
         </p>
       )}
     </div>

@@ -7,8 +7,9 @@ import { FeedbackProvider } from "@/components/FeedbackContext";
 import FeedbackDialog from "@/components/FeedbackDialog";
 import { StreamingContext } from "./StreamingContext";
 import api from "@/utils/axiosConfig";
+import SuggestionChips from "./SuggestionChips";
 
-/**
+/**z
  * Removes the word "None" when it appears as a last name.
  * The function looks for patterns where a non-space sequence is followed by one or more spaces and then "None",
  * and replaces the match with just the first name.
@@ -49,6 +50,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isStreamingComplete, setIsStreamingComplete] = useState(true);
+  const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
     localStorage.removeItem("chatHistory");
@@ -91,14 +93,14 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
               "x-vercel-secret": process.env.NEXT_PUBLIC_VERCEL_SECRET,
             },
           });
-        
-        
+
+
         // Handle different response types more robustly
         let fullText = sampleMarkdown;
         if (response.data && response.data.response !== undefined) {
           if (typeof response.data.response === "string") {
-            fullText = response.data.response.trim().length > 0 
-              ? removeNoneLastName(response.data.response) 
+            fullText = response.data.response.trim().length > 0
+              ? removeNoneLastName(response.data.response)
               : sampleMarkdown;
           } else if (response.data.response !== null) {
             // If response is not string but is a valid data object/array, convert to string
@@ -109,7 +111,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
             }
           }
         }
-        
+
         // Update with a small delay to ensure state has settled
         setTimeout(() => {
           setChatHistory((prev) => {
@@ -118,7 +120,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
             if (!messageExists) {
               return prev;
             }
-            
+
             return prev.map((msg) =>
               msg.id === aiMsgId
                 ? { ...msg, message: fullText, fullText, isLoading: false, stream: false }
@@ -130,7 +132,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
         }, 100);
       } catch (error) {
         const plainText = sampleMarkdown;
-        
+
         // Use timeout to ensure consistent behavior
         setTimeout(() => {
           setChatHistory((prev) =>
@@ -174,6 +176,11 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
               <h2 className="text-3xl sm:text-5xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent">
                 {welcomeMessage}
               </h2>
+              <SuggestionChips
+                onSelectSuggestion={(suggestion) => {
+                  setInputValue(suggestion);
+                }}
+              />
             </div>
           )}
 
@@ -212,7 +219,12 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
           )}
 
           <div className="sticky bottom-0 z-10 bg-[#212121] w-full px-4 pb-4">
-            <ChatInput onSubmit={handleUserSubmit} conversationOpen={conversationOpen} />
+            <ChatInput 
+            onSubmit={handleUserSubmit} 
+            conversationOpen={conversationOpen} 
+            inputValue={inputValue}
+            setInputValue={setInputValue}
+            />
           </div>
         </div>
 
