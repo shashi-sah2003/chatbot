@@ -1,7 +1,7 @@
 "use client";
 import React, { useContext, useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
-import { FeedbackContext } from "./FeedbackContext";
+import { useForm, SubmitHandler } from "react-hook-form";
+import { FeedbackContext, FeedbackContextType } from "./FeedbackContext";
 import { Button } from "./ui/button";
 import toast from "react-hot-toast";
 import { motion, AnimatePresence } from "framer-motion";
@@ -9,9 +9,18 @@ import Loader from "@/components/Loader";
 import PageTransition from "@/components/PageTransition";
 import api from "@/utils/axiosConfig";
 
-const FeedbackDialog = () => {
-  const { feedbackData, closeFeedback } = useContext(FeedbackContext);
-  const { register, handleSubmit, reset, setValue } = useForm({
+interface FeedbackFormData {
+  userQuery: string;
+  aiResponse: string;
+  sentiment: string;
+  message: string;
+}
+
+const FeedbackDialog: React.FC = () => {
+  // Assert the context type here (assumes that the context is provided)
+  const { feedbackData, closeFeedback } = useContext(FeedbackContext) as FeedbackContextType;
+  
+  const { register, handleSubmit, reset, setValue } = useForm<FeedbackFormData>({
     defaultValues: {
       userQuery: "",
       aiResponse: "",
@@ -19,7 +28,7 @@ const FeedbackDialog = () => {
       message: ""
     }
   });
-  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
   useEffect(() => {
     if (feedbackData.isOpen) {
@@ -30,15 +39,18 @@ const FeedbackDialog = () => {
     }
   }, [feedbackData, setValue]);
 
-  const onSubmit = async (data) => {
+  const onSubmit: SubmitHandler<FeedbackFormData> = async (data) => {
     try {
       setIsSubmitting(true);
-      const response = await api.post('api/feedback',
-        data, {
-        headers: {
-          "x-vercel-secret": process.env.NEXT_PUBLIC_VERCEL_SECRET,
-        },
-      });
+      const response = await api.post(
+        'api/feedback',
+        data,
+        {
+          headers: {
+            "x-vercel-secret": process.env.NEXT_PUBLIC_VERCEL_SECRET,
+          },
+        }
+      );
       if (response.status === 200) {
         // Show a toast based on sentiment if available
         if (feedbackData.sentiment === "like") {
@@ -80,8 +92,9 @@ const FeedbackDialog = () => {
 
               {/* Sentiment Section */}
               <div
-                className={`mb-3 p-2 rounded ${feedbackData.sentiment === "like" ? "bg-green-500" : "bg-red-500"
-                  }`}
+                className={`mb-3 p-2 rounded ${
+                  feedbackData.sentiment === "like" ? "bg-green-500" : "bg-red-500"
+                }`}
               >
                 <p className="text-white font-semibold">
                   Sentiment: {feedbackData.sentiment === "like" ? "Positive" : "Negative"}
