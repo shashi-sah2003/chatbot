@@ -18,6 +18,8 @@ api.interceptors.response.use(
                 `Too many requests. Please wait ${retryAfter} seconds before trying again.`, 
                 { duration: 5000}
             );
+        }else if( error.response && error.response.status === 503){
+            toast.error("We are currently experiencing huge demand. Please try again later.", { duration: 8000 });
         }
         return Promise.reject(error);
     }
