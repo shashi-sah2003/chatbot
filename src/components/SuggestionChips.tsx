@@ -44,7 +44,7 @@ const SuggestionChips = ({ onSelectSuggestion }: SuggestionChipsProps) => {
       {showRefreshButton && (
         <button 
           onClick={showNextBatch}
-          className="mt-2 text-blue-400 hover:text-blue-300 flex items-center gap-1 text-sm"
+          className="mt-2 text-blue-400 hover:text-blue-300 flex items-center gap-1 text-sm pb-4"
           aria-label="Show more suggestions"
         >
           <ArrowPathIcon className="h-3 w-3" /> 

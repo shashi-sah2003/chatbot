@@ -222,12 +222,12 @@ export default function ChatPage() {
             <div className="text-center mt-28">
               <h2 className="text-3xl sm:text-5xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent">
                 {welcomeMessage}
-                <SuggestionChips
-                  onSelectSuggestion={(suggestion) => {
-                    setInputValue(suggestion);
-                  }}
-                />
               </h2>
+              <SuggestionChips
+                onSelectSuggestion={(suggestion) => {
+                  setInputValue(suggestion);
+                }}
+              />
             </div>
           )}
 
