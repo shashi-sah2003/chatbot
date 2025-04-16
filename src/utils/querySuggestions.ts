@@ -1,6 +1,8 @@
 const routeSuggestions = {
     "/": [
         "Tell me about DTU's history",
+        "I want to do research in Blockchain. Which Faculty is specialized in this domain?",
+        "Who is HOD of IT",
         "What departments are available at DTU?",
         "What are the placement statistics for DTU?",
         "Tell me about hostel facilities at DTU",
