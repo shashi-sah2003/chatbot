@@ -1,9 +1,10 @@
 const routeSuggestions = {
     "/": [
         "Tell me about DTU's history",
-        "I want to do research in Blockchain. Which Faculty is specialized in this domain?",
-        "Who is HOD of IT",
+        "I want to complete my BTech Project, recommend professors in CSE department.",
+        "Who is HOD of IT?",
         "What departments are available at DTU?",
+        "I want to do research in Blockchain. Which Faculty is specialized in this domain?",
         "What are the placement statistics for DTU?",
         "Tell me about hostel facilities at DTU",
         "What sports facilities are available at DTU?",
