@@ -29,11 +29,12 @@ const routeSuggestions = {
     ],
 
     "/pyq": [
-        "pyq of computer networks",
-        "latest pyq of compiler design",
-        "pyq of mid sem of dsa",
-        "pyq of end sem of dbms",
-        "pyq of specific branch",
+        "Pyq of computer networks",
+        "Pyq of compiler design 2023",
+        "Pyq of end sem of dbms",
+        "Pyq of Operating System Design endsem",
+        "Pyq of IT branch",
+        "Pyq of 'subject_name'",
     ],
 
 };
