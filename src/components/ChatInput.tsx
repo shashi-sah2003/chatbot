@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect, FormEvent, useLayoutEffect } from "react";
+import { useRef, useEffect, FormEvent, useState, useLayoutEffect } from "react";
 import { Button } from "./ui/button";
 import { ArrowUp, CircleStop } from "lucide-react";
 import toast from "react-hot-toast";
@@ -8,7 +8,6 @@ import { Textarea } from "./ui/textarea";
 import { useStreaming } from "./StreamingContext";
 import { moderateMessage } from "./moderator";
 
-// Define a type for moderated responses
 export interface ModeratedResponse {
   simulatedResponse: {
     id: number;
@@ -28,12 +27,11 @@ export interface ModeratedResponse {
 interface ChatInputProps {
   onSubmit: (query: string, moderatedResponse?: ModeratedResponse) => Promise<void>;
   conversationOpen?: boolean;
-  inputValue?: string;
-  setInputValue?: (value: string) => void;
+  inputValue: string;
+  setInputValue: (value: string) => void;
 }
 
-const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInputValue }: ChatInputProps) => {
-  const [prompt, setPrompt] = useState(inputValue);
+const ChatInput = ({ onSubmit, conversationOpen = false, inputValue, setInputValue }: ChatInputProps) => {
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const { isStreaming, isStreamingComplete, setIsStreaming, setIsStreamingComplete } = useStreaming();
   const [submitClicked, setSubmitClicked] = useState(false);
@@ -43,10 +41,9 @@ const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInput
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       const computedStyle = window.getComputedStyle(textareaRef.current);
-      // Ensure the lineHeight is parsed as a number (default to 20px if parsing fails)
       const lineHeight = parseInt(computedStyle.lineHeight) || 20;
       const maxRows = 8;
-      const queryRows = maxRows - 2; // Reserve 2 rows for buttons
+      const queryRows = maxRows - 2;
       const maxHeight = lineHeight * queryRows;
       const newHeight = Math.min(textareaRef.current.scrollHeight, maxHeight);
       textareaRef.current.style.height = `${newHeight}px`;
@@ -55,30 +52,27 @@ const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInput
     }
   };
 
+  // Resize if inputValue changes
   useEffect(() => {
-    if (inputValue) {
-      setPrompt(inputValue);
-      setTimeout(autoResize, 0);
-    }
+    setTimeout(autoResize, 0);
   }, [inputValue]);
 
-  useLayoutEffect(() => {
-    autoResize();
-  }, [prompt]);
-
-  // Effect to reset streaming state when a new session is triggered
+  // Reset streaming state on new session event
   useEffect(() => {
     const handleNewSession = () => {
       setIsStreaming(false);
       setIsStreamingComplete(true);
-      setPrompt("");
+      setInputValue("");
       setIsInputBlocked(false);
     };
     window.addEventListener("new-session", handleNewSession);
     return () => window.removeEventListener("new-session", handleNewSession);
-  }, [setIsStreaming, setIsStreamingComplete]);
+  }, [setIsStreaming, setIsStreamingComplete, setInputValue]);
 
-  // Set streaming to true as soon as the submit button is pressed
+  useLayoutEffect(() => {
+    autoResize();
+  }, [inputValue]);
+
   useEffect(() => {
     if (submitClicked) {
       setIsStreaming(true);
@@ -87,21 +81,19 @@ const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInput
 
   const handleSendMessage = async (e?: FormEvent) => {
     if (e) e.preventDefault();
-    if (!prompt) return;
+    if (!inputValue) return;
     
-    // Prevent sending if input is blocked or streaming is in progress
     if (isInputBlocked || isStreaming || !isStreamingComplete) {
       toast.error("Please wait for the current response to finish!");
       return;
     }
     
-    // Apply the moderator function
-    const moderation = moderateMessage(prompt);
+    const moderation = moderateMessage(inputValue);
     
     if (moderation.shouldBlock) {
       if (moderation.isToast) {
         toast.error(moderation.response);
-        if (prompt.length > 200) {
+        if (inputValue.length > 200) {
           setIsInputBlocked(true);
           setTimeout(() => {
             setIsInputBlocked(false);
@@ -109,13 +101,11 @@ const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInput
           }, 3000);
         }
       } else {
-        // Simulate responses when moderation blocks the query
         const simulatedResponse = {
           id: Date.now() + Math.random(),
           sender: "user" as const,
-          message: prompt
+          message: inputValue
         };
-        
         const aiResponse = {
           id: Date.now() + Math.random(),
           sender: "ai" as const,
@@ -124,25 +114,22 @@ const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInput
           isLoading: false,
           stream: false
         };
-        
-        await onSubmit(prompt, { simulatedResponse, aiResponse });
+        await onSubmit(inputValue, { simulatedResponse, aiResponse });
       }
-      setPrompt("");
+      setInputValue("");
       return;
     }
     
-    // If the message passes moderation, proceed normally
     setSubmitClicked(true);
     try {
-      await onSubmit(prompt);
+      await onSubmit(inputValue);
     } catch (err) {
       toast.error("Error while sending query!");
     }
-    setPrompt("");
+    setInputValue("");
     setSubmitClicked(false);
   };
 
-  // Function to handle stopping the streaming response
   const handleStopStreaming = () => {
     setIsStreaming(false);
     setIsStreamingComplete(true);
@@ -165,11 +152,11 @@ const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInput
             disabled={isStreaming || !isStreamingComplete || isInputBlocked}
             className="w-full bg-transparent rounded-2xl text-white placeholder:text-zinc-400 resize-none border-2 border-zinc-600 outline-none focus:outline-none focus:ring-2 focus:ring-purple-300 focus:border-purple-300 pb-12 shadow-lg"
             style={{ boxShadow: "0 4px 6px rgba(0, 0, 0, 0.1)" }}
-            value={prompt}
+            value={inputValue}  // now using the prop from parent
             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => {
               const newValue = e.target.value;
               if (newValue.length <= 200) {
-                setPrompt(newValue);
+                setInputValue(newValue);
                 autoResize();
               } else {
                 toast.error("Please keep your question under 200 characters");
@@ -194,7 +181,7 @@ const ChatInput = ({ onSubmit, conversationOpen = false, inputValue="", setInput
                   handleStopStreaming();
                 }
               }}
-              disabled={!isStreaming && (!prompt || isInputBlocked)}
+              disabled={!isStreaming && (!inputValue || isInputBlocked)}
               className="rounded-full px-2 border dark:border-zinc-600 bg-white text-black hover:bg-gray-100 transition-transform duration-150"
             >
               {isStreaming || !isStreamingComplete ? (

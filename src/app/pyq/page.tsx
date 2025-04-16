@@ -8,6 +8,7 @@ import FeedbackDialog from "@/components/FeedbackDialog";
 import { StreamingContext } from "@/components/StreamingContext";
 import UploadQuestionPaper from "@/components/UploadQuestionPaper";
 import api from "@/utils/axiosConfig";
+import SuggestionChips from "@/components/SuggestionChips";
 
 // Define a tuple type for each paper.
 // Adjust the types if you have more specific information.
@@ -57,6 +58,7 @@ export default function ChatPage() {
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
   const [isStreamingComplete, setIsStreamingComplete] = useState(true);
+  const [inputValue, setInputValue] = useState("");
   const welcomeMessage = "Welcome to Pyq's Section";
 
   // Clear local chat history on mount
@@ -76,12 +78,12 @@ export default function ChatPage() {
       { id: userMsgId, sender: "user", message: userQuery },
       { id: aiMsgId, sender: "ai", message: "", isLoading: true, stream: true },
     ]);
-    
+
     setIsStreaming(true);
 
     try {
       const response = await api.post<PyqPapersResponse>(
-        '/api/pyq_papers',
+        "/api/pyq_papers",
         { query: userQuery },
         {
           headers: {
@@ -89,7 +91,7 @@ export default function ChatPage() {
           },
         }
       );
-            
+
       let papersArray: Paper[] | null = null;
 
       // Enhanced response parsing with better error handling
@@ -114,11 +116,11 @@ export default function ChatPage() {
           // Update the AI message in chat history with the markdown table
           setChatHistory((prev) => {
             // Check if message still exists
-            const messageExists = prev.some(msg => msg.id === aiMsgId);
+            const messageExists = prev.some((msg) => msg.id === aiMsgId);
             if (!messageExists) {
               return prev;
             }
-            
+
             return prev.map((msg) =>
               msg.id === aiMsgId
                 ? {
@@ -139,11 +141,11 @@ export default function ChatPage() {
           }
           setChatHistory((prev) => {
             // Check if message still exists
-            const messageExists = prev.some(msg => msg.id === aiMsgId);
+            const messageExists = prev.some((msg) => msg.id === aiMsgId);
             if (!messageExists) {
               return prev;
             }
-            
+
             return prev.map((msg) =>
               msg.id === aiMsgId
                 ? {
@@ -157,12 +159,11 @@ export default function ChatPage() {
             );
           });
         }
-        
+
         setIsStreaming(false);
         setIsStreamingComplete(true);
       }, 100);
     } catch (error) {
-      
       setTimeout(() => {
         setChatHistory((prev) =>
           prev.map((msg) =>
@@ -177,7 +178,7 @@ export default function ChatPage() {
               : msg
           )
         );
-        
+
         setIsStreaming(false);
         setIsStreamingComplete(true);
       }, 100);
@@ -195,7 +196,8 @@ export default function ChatPage() {
       handleNewSession();
     };
     window.addEventListener("new-session", handleNewSessionEvent);
-    return () => window.removeEventListener("new-session", handleNewSessionEvent);
+    return () =>
+      window.removeEventListener("new-session", handleNewSessionEvent);
   }, []);
 
   const conversationOpen = chatHistory.length > 0;
@@ -207,7 +209,12 @@ export default function ChatPage() {
 
   return (
     <StreamingContext.Provider
-      value={{ isStreaming, setIsStreaming, isStreamingComplete, setIsStreamingComplete }}
+      value={{
+        isStreaming,
+        setIsStreaming,
+        isStreamingComplete,
+        setIsStreamingComplete,
+      }}
     >
       <FeedbackProvider>
         <div className="flex flex-col overflow-y-auto overflow-x-hidden h-[89dvh] w-full max-w-screen-md mx-auto bg-[#212121]">
@@ -216,6 +223,11 @@ export default function ChatPage() {
               <h2 className="text-3xl sm:text-5xl font-semibold bg-gradient-to-r from-blue-500 to-red-400 bg-clip-text text-transparent">
                 {welcomeMessage}
               </h2>
+              <SuggestionChips
+                onSelectSuggestion={(suggestion) => {
+                  setInputValue(suggestion);
+                }}
+              />
             </div>
           )}
 
@@ -232,7 +244,8 @@ export default function ChatPage() {
                     !msg.isLoading &&
                     !isStreaming
                   ) {
-                    associatedUserQuery = chatHistory[index - 1].message as string;
+                    associatedUserQuery = chatHistory[index - 1]
+                      .message as string;
                     showFeedbackIcons = true;
                   }
                   return (
@@ -255,7 +268,12 @@ export default function ChatPage() {
 
           {/* Render the chat input */}
           <div className="sticky bottom-0 z-10 bg-[#212121] w-full px-4 pb-4">
-            <ChatInput onSubmit={handleUserSubmit} conversationOpen={conversationOpen} />
+            <ChatInput
+              onSubmit={handleUserSubmit}
+              conversationOpen={conversationOpen}
+              inputValue={inputValue}
+              setInputValue={setInputValue}
+            />
           </div>
 
           {/* Render UploadQuestionPaper below ChatInput if welcomeMessage exists */}

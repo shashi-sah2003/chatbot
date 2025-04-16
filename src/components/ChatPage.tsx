@@ -9,6 +9,7 @@ import { StreamingContext } from "./StreamingContext";
 import api from "@/utils/axiosConfig";
 import SuggestionChips from "./SuggestionChips";
 
+
 /**z
  * Removes the word "None" when it appears as a last name.
  * The function looks for patterns where a non-space sequence is followed by one or more spaces and then "None",
@@ -18,7 +19,7 @@ import SuggestionChips from "./SuggestionChips";
  * @returns {string} The processed text with "None" removed from names.
  */
 function removeNoneLastName(text: string): string {
-  return text.replace(/\b(\S+)\s+None\b/g, '$1');
+  return text.replace(/\b(\S+)\s+None\b/g, "$1");
 }
 
 export interface ChatMessage {
@@ -45,7 +46,10 @@ interface ModeratedResponse {
 
 const sampleMarkdown = "Unexpected error occurred. Please try again later.";
 
-export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps) {
+export default function ChatPage({
+  apiEndpoint,
+  welcomeMessage,
+}: ChatPageProps) {
   const [containerRef, bottomRef] = useScrollToBottom<HTMLDivElement>();
   const [chatHistory, setChatHistory] = useState<ChatMessage[]>([]);
   const [isStreaming, setIsStreaming] = useState(false);
@@ -57,7 +61,10 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
     setChatHistory([]);
   }, []);
 
-  const handleUserSubmit = async (userQuery: string, moderatedResponse?: ModeratedResponse) => {
+  const handleUserSubmit = async (
+    userQuery: string,
+    moderatedResponse?: ModeratedResponse
+  ) => {
     const userMsgId = Date.now() + Math.random();
     const aiMsgId = Date.now() + Math.random();
 
@@ -65,7 +72,7 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
     setChatHistory((prev) => [
       ...prev,
       { id: userMsgId, sender: "user", message: userQuery },
-      { id: aiMsgId, sender: "ai", message: "", isLoading: true, stream: true }
+      { id: aiMsgId, sender: "ai", message: "", isLoading: true, stream: true },
     ]);
     setIsStreaming(true); // Disable input during processing
 
@@ -76,7 +83,13 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
         setChatHistory((prev) =>
           prev.map((msg) =>
             msg.id === aiMsgId
-              ? { ...msg, message: aiResponse.message, fullText: aiResponse.fullText, isLoading: false, stream: false }
+              ? {
+                  ...msg,
+                  message: aiResponse.message,
+                  fullText: aiResponse.fullText,
+                  isLoading: false,
+                  stream: false,
+                }
               : msg
           )
         );
@@ -86,22 +99,24 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
     } else {
       // Proceed to backend for non-moderated queries
       try {
-        const response = await api.post(`api${apiEndpoint}`,
+        const response = await api.post(
+          `api${apiEndpoint}`,
           { query: userQuery },
           {
             headers: {
               "x-vercel-secret": process.env.NEXT_PUBLIC_VERCEL_SECRET,
             },
-          });
-
+          }
+        );
 
         // Handle different response types more robustly
         let fullText = sampleMarkdown;
         if (response.data && response.data.response !== undefined) {
           if (typeof response.data.response === "string") {
-            fullText = response.data.response.trim().length > 0
-              ? removeNoneLastName(response.data.response)
-              : sampleMarkdown;
+            fullText =
+              response.data.response.trim().length > 0
+                ? removeNoneLastName(response.data.response)
+                : sampleMarkdown;
           } else if (response.data.response !== null) {
             // If response is not string but is a valid data object/array, convert to string
             try {
@@ -116,14 +131,20 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
         setTimeout(() => {
           setChatHistory((prev) => {
             // Check if the message still exists in the chat history
-            const messageExists = prev.some(msg => msg.id === aiMsgId);
+            const messageExists = prev.some((msg) => msg.id === aiMsgId);
             if (!messageExists) {
               return prev;
             }
 
             return prev.map((msg) =>
               msg.id === aiMsgId
-                ? { ...msg, message: fullText, fullText, isLoading: false, stream: false }
+                ? {
+                    ...msg,
+                    message: fullText,
+                    fullText,
+                    isLoading: false,
+                    stream: false,
+                  }
                 : msg
             );
           });
@@ -138,7 +159,13 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
           setChatHistory((prev) =>
             prev.map((msg) =>
               msg.id === aiMsgId
-                ? { ...msg, message: plainText, fullText: sampleMarkdown, isLoading: false, stream: false }
+                ? {
+                    ...msg,
+                    message: plainText,
+                    fullText: sampleMarkdown,
+                    isLoading: false,
+                    stream: false,
+                  }
                 : msg
             )
           );
@@ -159,16 +186,26 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
       handleNewSession();
     };
     window.addEventListener("new-session", handleNewSessionEvent);
-    return () => window.removeEventListener("new-session", handleNewSessionEvent);
+    return () =>
+      window.removeEventListener("new-session", handleNewSessionEvent);
   }, []);
 
   const conversationOpen = chatHistory.length > 0;
   useEffect(() => {
-    window.dispatchEvent(new CustomEvent("conversation-changed", { detail: { conversationOpen } }));
+    window.dispatchEvent(
+      new CustomEvent("conversation-changed", { detail: { conversationOpen } })
+    );
   }, [conversationOpen]);
 
   return (
-    <StreamingContext.Provider value={{ isStreaming, setIsStreaming, isStreamingComplete, setIsStreamingComplete }}>
+    <StreamingContext.Provider
+      value={{
+        isStreaming,
+        setIsStreaming,
+        isStreamingComplete,
+        setIsStreamingComplete,
+      }}
+    >
       <FeedbackProvider>
         <div className="flex flex-col overflow-auto h-[90dvh] w-full max-w-screen-md mx-auto bg-[#212121]a">
           {!conversationOpen && (
@@ -186,7 +223,10 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
 
           {conversationOpen && (
             <div className="flex-1 overflow-auto">
-              <div ref={containerRef} className="flex flex-col space-y-4 px-4 pt-4">
+              <div
+                ref={containerRef}
+                className="flex flex-col space-y-4 px-4 pt-4"
+              >
                 {chatHistory.map((msg, index) => {
                   let associatedUserQuery = "";
                   let showFeedbackIcons = false;
@@ -197,7 +237,8 @@ export default function ChatPage({ apiEndpoint, welcomeMessage }: ChatPageProps)
                     !msg.isLoading &&
                     !isStreaming
                   ) {
-                    associatedUserQuery = chatHistory[index - 1].message as string;
+                    associatedUserQuery = chatHistory[index - 1]
+                      .message as string;
                     showFeedbackIcons = true;
                   }
                   return (
