@@ -32,26 +32,31 @@ const sampleMarkdown = `Unexpected error occurred. Please try again later.`;
 
 // Function to generate a markdown table from the CSV-like array response
 const generateMarkdownTable = (papersArray: Paper[]): string => {
-  if (papersArray.length === 0) {
+  if (!papersArray.length) {
     return "Currently I can't help you with this query😔.";
   }
   const header =
-    "Subject Code | Year | Sem | Month | Branch | Link |\n| --- | --- | --- | --- | --- | --- |\n";
-  const rows = papersArray
-    .map((paper: Paper) => {
-      // Omit the first (id) and last (filePath) columns
-      const subjectCode = paper[2];
-      const year = paper[3];
-      const examType = paper[4];
-      const month = paper[5];
-      const dept = paper[6];
-      const pdfUrl = paper[7];
-      const link = `[View Paper](${pdfUrl})`;
-      return `|${subjectCode} | ${year} | ${examType} | ${month} | ${dept} | ${link} |`;
-    })
-    .join("\n");
-  return header + rows;
+    "Subject Code | Year | Sem | Month | Branch | Link |\n" +
+    "| --- | --- | --- | --- | --- | --- |\n";
+
+  const rows = papersArray.map((paper) => {
+    const subjectCode = paper[2];
+    const year        = paper[3];
+    const examType    = paper[4];
+    const month       = paper[5];
+    const dept        = paper[6];
+    const pdfUrl      = paper[7];
+
+    // encode the URL so spaces → %20, etc.
+    const encodedUrl  = encodeURI(pdfUrl);
+    const link        = `[View Paper](${encodedUrl})`;
+
+    return `| ${subjectCode} | ${year} | ${examType} | ${month} | ${dept} | ${link} |`;
+  });
+
+  return header + rows.join("\n");
 };
+
 
 export default function ChatPage() {
   const [containerRef, bottomRef] = useScrollToBottom<HTMLDivElement>();
